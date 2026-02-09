@@ -113,7 +113,7 @@ def generate_launch_description():
         'use_rviz', default_value='True', description='Whether to start RVIZ'
     )
 
-    sdf = os.path.join(desc_dir, 'urdf', 'standard', 'turtlebot4.urdf.xacro')
+    sdf = os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro')
     start_robot_state_publisher_cmd = Node(
         condition=IfCondition(use_robot_state_pub),
         package='robot_state_publisher',
