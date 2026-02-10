@@ -26,6 +26,7 @@ from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
 
+TB4_BOT = False
 
 def generate_launch_description():
     sim_dir = get_package_share_directory('wb_nav2_bringup')
@@ -60,16 +61,27 @@ def generate_launch_description():
         description='Use simulation (Gazebo) clock if true',
     )
 
-    declare_robot_name_cmd = DeclareLaunchArgument(
-        'robot_name',
-        default_value='turtlebot4',
-        description='name of the robot')
+    if(TB4_BOT):
+        declare_robot_name_cmd = DeclareLaunchArgument(
+            'robot_name',
+            default_value='turtlebot4',
+            description='name of the robot')
 
-    # declare_robot_sdf_cmd = DeclareLaunchArgument(
-    #     'robot_sdf',
-    #     default_value=os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro'),
-    #     description='Full path to robot sdf file to spawn the robot in gazebo')
+        declare_robot_sdf_cmd = DeclareLaunchArgument(
+            'robot_sdf',
+            default_value=os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro'),
+            description='Full path to robot sdf file to spawn the robot in gazebo')
+    else:
+        declare_robot_name_cmd = DeclareLaunchArgument(
+            'robot_name',
+            default_value='forklift',
+            description='name of the robot')
 
+        declare_robot_sdf_cmd = DeclareLaunchArgument(
+            'robot_sdf',
+            default_value=os.path.join(desc_dir, 'urdf', 'forklift.urdf.xacro'),
+            description='Full path to robot sdf file to spawn the robot in gazebo')
+        
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',

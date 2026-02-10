@@ -34,6 +34,18 @@ from launch.substitutions import LaunchConfiguration, PythonExpression
 
 from launch_ros.actions import Node
 
+# Pick the environment for the robot
+#
+# WORLD_YAML = 'tb3_sandbox.yaml'
+# WORLD_SDF = 'tb3_sandbox.sdf.xacro'
+# WORLD_YAML = 'depot.yaml'
+# WORLD_SDF = 'depot.sdf'
+WORLD_YAML = 'warehouse.yaml'
+WORLD_SDF = 'warehouse.sdf'
+
+# WORLD_SDF = 'test.world'
+
+TB4_BOT = False
 
 def generate_launch_description():
     # Get the launch directory
@@ -89,7 +101,7 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
-        default_value=os.path.join(bringup_dir, 'maps', 'tb3_sandbox.yaml'),
+        default_value=os.path.join(bringup_dir, 'maps', WORLD_YAML),
     )
 
     declare_use_sim_time_cmd = DeclareLaunchArgument(
@@ -150,7 +162,7 @@ def generate_launch_description():
 
     declare_world_cmd = DeclareLaunchArgument(
         'world',
-        default_value=os.path.join(sim_dir, 'worlds', 'tb3_sandbox.sdf.xacro'),
+        default_value=os.path.join(sim_dir, 'worlds', WORLD_SDF),
         description='Full path to world model file to load',
     )
 

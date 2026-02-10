@@ -42,6 +42,10 @@ from launch_ros.actions import Node
 WORLD_YAML = 'warehouse.yaml'
 WORLD_SDF = 'warehouse.sdf'
 
+# WORLD_SDF = 'test.world'
+
+TB4_BOT = True
+
 
 def generate_launch_description():
     # Get the launch directory
@@ -71,7 +75,7 @@ def generate_launch_description():
     headless = LaunchConfiguration('headless')
     world = LaunchConfiguration('world')
     pose = {
-        'x': LaunchConfiguration('x_pose', default='-8.00'),  # Warehouse: 2.12
+        'x': LaunchConfiguration('x_pose', default='-4.00'),  # Warehouse: 2.12
         'y': LaunchConfiguration('y_pose', default='0.00'),  # Warehouse: -21.3
         'z': LaunchConfiguration('z_pose', default='0.01'),
         'R': LaunchConfiguration('roll', default='0.00'),
@@ -166,15 +170,26 @@ def generate_launch_description():
         description='Full path to world model file to load',
     )
 
-    declare_robot_name_cmd = DeclareLaunchArgument(
-        'robot_name', default_value='nav2_turtlebot4', description='name of the robot'
-    )
+    if(TB4_BOT):
+        declare_robot_name_cmd = DeclareLaunchArgument(
+            'robot_name', default_value='nav2_turtlebot4', description='name of the robot'
+        )
 
-    declare_robot_sdf_cmd = DeclareLaunchArgument(
-        'robot_sdf',
-        default_value=os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro'),
-        description='Full path to robot sdf file to spawn the robot in gazebo',
-    )
+        declare_robot_sdf_cmd = DeclareLaunchArgument(
+            'robot_sdf',
+            default_value=os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro'),
+            description='Full path to robot sdf file to spawn the robot in gazebo',
+        )
+    else:
+        declare_robot_name_cmd = DeclareLaunchArgument(
+            'robot_name', default_value='nav2_forklift', description='name of the robot'
+        )
+
+        declare_robot_sdf_cmd = DeclareLaunchArgument(
+            'robot_sdf',
+            default_value=os.path.join(desc_dir, 'urdf', 'forklift.urdf.xacro'),
+            description='Full path to robot sdf file to spawn the robot in gazebo',
+        )
 
     start_robot_state_publisher_cmd = Node(
         condition=IfCondition(use_robot_state_pub),

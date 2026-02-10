@@ -60,7 +60,8 @@
   </link>
     
   <joint name="${name}_rgb_camera_optical_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+      <!-- <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/> -->
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <parent link="${name}_rgb_camera_frame"/>
       <child link="${name}_rgb_camera_optical_frame"/>
   </joint>
@@ -137,7 +138,20 @@
       </camera>
       <update_rate>10</update_rate>
       <visualize>true</visualize>
-      <topic>rgbd_camera</topic>
+      <topic>depth_camera</topic>
+      <baseline>0.2</baseline>
+      <pointCloudCutoff>0.5</pointCloudCutoff>
+      <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
+      <distortionK1>0</distortionK1>
+      <distortionK2>0</distortionK2>
+      <distortionK3>0</distortionK3>
+      <distortionT1>0</distortionT1>
+      <distortionT2>0</distortionT2>
+      <CxPrime>0</CxPrime>
+      <Cx>0</Cx>
+      <Cy>0</Cy>
+      <focalLength>0</focalLength>
+      <hackBaseline>0</hackBaseline>
     </sensor>
     <xacro:material_darkgray/>
   </gazebo>
