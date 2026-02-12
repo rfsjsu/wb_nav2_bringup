@@ -37,14 +37,14 @@ from launch_ros.actions import Node
 
 # Pick the environment for the robot
 #
-# WORLD_YAML = 'depot.yaml'
-# WORLD_SDF = 'depot.sdf'
-WORLD_YAML = 'warehouse.yaml'
-WORLD_SDF = 'warehouse.sdf'
+WORLD_YAML = 'depot.yaml'
+WORLD_SDF = 'depot.sdf'
+# WORLD_YAML = 'warehouse.yaml'
+# WORLD_SDF = 'warehouse.sdf'
 
 # WORLD_SDF = 'test.world'
 
-TB4_BOT = True
+TB4_BOT = False
 
 
 def generate_launch_description():
@@ -77,7 +77,7 @@ def generate_launch_description():
     pose = {
         'x': LaunchConfiguration('x_pose', default='-4.00'),  # Warehouse: 2.12
         'y': LaunchConfiguration('y_pose', default='0.00'),  # Warehouse: -21.3
-        'z': LaunchConfiguration('z_pose', default='0.01'),
+        'z': LaunchConfiguration('z_pose', default='0.15'),
         'R': LaunchConfiguration('roll', default='0.00'),
         'P': LaunchConfiguration('pitch', default='0.00'),
         'Y': LaunchConfiguration('yaw', default='0.00'),  # Warehouse: 1.57
@@ -182,14 +182,23 @@ def generate_launch_description():
         )
     else:
         declare_robot_name_cmd = DeclareLaunchArgument(
-            'robot_name', default_value='nav2_forklift', description='name of the robot'
+            'robot_name', default_value='nav2_evx_forklift', description='name of the robot'
         )
 
         declare_robot_sdf_cmd = DeclareLaunchArgument(
             'robot_sdf',
-            default_value=os.path.join(desc_dir, 'urdf', 'forklift.urdf.xacro'),
+            default_value=os.path.join(desc_dir, 'urdf', 'RX20_16', 'main.xacro'),
             description='Full path to robot sdf file to spawn the robot in gazebo',
         )
+        # declare_robot_name_cmd = DeclareLaunchArgument(
+        #     'robot_name', default_value='nav2_forklift', description='name of the robot'
+        # )
+
+        # declare_robot_sdf_cmd = DeclareLaunchArgument(
+        #     'robot_sdf',
+        #     default_value=os.path.join(desc_dir, 'urdf', 'forklift.urdf.xacro'),
+        #     description='Full path to robot sdf file to spawn the robot in gazebo',
+        # )
 
     start_robot_state_publisher_cmd = Node(
         condition=IfCondition(use_robot_state_pub),

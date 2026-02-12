@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+
+<robot name="RX20_16" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <gazebo>
+     <plugin
+        filename="gz-sim-diff-drive-system"
+        name="gz::sim::systems::DiffDrive">
+        <wheel_separation>1.12</wheel_separation>
+        <wheel_radius>0.18</wheel_radius>
+        <update_rate>30</update_rate>
+        <left_joint>wheel_left_driving_joint</left_joint>
+        <right_joint>wheel_right_driving_joint</right_joint>
+        <max_wheel_torque>200</max_wheel_torque>
+        <max_wheel_acceleration>1</max_wheel_acceleration>
+        <topic>/cmd_vel</topic>
+        <odom_topic>/odom</odom_topic>
+        <tf_topic>tf</tf_topic>
+        <frame_id>odom</frame_id>
+        <child_frame_id>base_footprint</child_frame_id>
+        <odom_publish_frequency>30</odom_publish_frequency>
+      </plugin>
+
+      <plugin
+        filename="gz-sim-joint-state-publisher-system"
+        name="gz::sim::systems::JointStatePublisher">
+        <joint_name>wheel_left_driving_joint</joint_name>
+        <joint_name>wheel_right_driving_joint</joint_name>
+        <topic>joint_states</topic>
+        <update_rate>30</update_rate>
+      </plugin>
+  </gazebo>
+</robot>
