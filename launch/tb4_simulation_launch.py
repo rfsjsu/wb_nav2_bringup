@@ -37,14 +37,14 @@ from launch_ros.actions import Node
 
 # Pick the environment for the robot
 #
-WORLD_YAML = 'depot.yaml'
-WORLD_SDF = 'depot.sdf'
+WORLD_YAML = ""#'depot.yaml'
+WORLD_SDF = ""#'depot.sdf'
 # WORLD_YAML = 'warehouse.yaml'
 # WORLD_SDF = 'warehouse.sdf'
 
 # WORLD_SDF = 'test.world'
 
-TB4_BOT = False
+# TB4_BOT = False
 
 
 def generate_launch_description():
@@ -74,13 +74,14 @@ def generate_launch_description():
     use_rviz = LaunchConfiguration('use_rviz')
     headless = LaunchConfiguration('headless')
     world = LaunchConfiguration('world')
+    bridge_config = LaunchConfiguration('bridge_config')
     pose = {
-        'x': LaunchConfiguration('x_pose', default='0.00'),  # Warehouse: 2.12
+        'x': LaunchConfiguration('x_pose', default='-8.00'),  # Warehouse: 2.12
         'y': LaunchConfiguration('y_pose', default='0.00'),  # Warehouse: -21.3
         'z': LaunchConfiguration('z_pose', default='0.15'),
-        'R': LaunchConfiguration('roll', default='0.00'),
-        'P': LaunchConfiguration('pitch', default='0.00'),
-        'Y': LaunchConfiguration('yaw', default='0.00'),  # Warehouse: 1.57
+        'R': LaunchConfiguration('roll', default='0'),
+        'P': LaunchConfiguration('pitch', default='0'),
+        'Y': LaunchConfiguration('yaw', default='0'),  # Warehouse: 1.57
     }
     robot_name = LaunchConfiguration('robot_name')
     robot_sdf = LaunchConfiguration('robot_sdf')
@@ -112,6 +113,12 @@ def generate_launch_description():
         'use_sim_time',
         default_value='true',
         description='Use simulation (Gazebo) clock if true',
+    )
+
+    declare_bridge_config_cmd = DeclareLaunchArgument(
+        'bridge_config',
+        default_value=os.path.join(bringup_dir, 'configs', 'tb4_bridge.yaml'),
+        description='Full path to robot sdf file to spawn the robot in gazebo'
     )
 
     declare_params_file_cmd = DeclareLaunchArgument(
@@ -170,35 +177,15 @@ def generate_launch_description():
         description='Full path to world model file to load',
     )
 
-    if(TB4_BOT):
-        declare_robot_name_cmd = DeclareLaunchArgument(
-            'robot_name', default_value='nav2_turtlebot4', description='name of the robot'
-        )
+    declare_robot_name_cmd = DeclareLaunchArgument(
+        'robot_name', default_value='nav2_turtlebot4', description='name of the robot'
+    )
 
-        declare_robot_sdf_cmd = DeclareLaunchArgument(
-            'robot_sdf',
-            default_value=os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro'),
-            description='Full path to robot sdf file to spawn the robot in gazebo',
-        )
-    else:
-        declare_robot_name_cmd = DeclareLaunchArgument(
-            'robot_name', default_value='nav2_evx_forklift', description='name of the robot'
-        )
-
-        declare_robot_sdf_cmd = DeclareLaunchArgument(
-            'robot_sdf',
-            default_value=os.path.join(desc_dir, 'urdf', 'RX20_16', 'main.xacro'),
-            description='Full path to robot sdf file to spawn the robot in gazebo',
-        )
-        # declare_robot_name_cmd = DeclareLaunchArgument(
-        #     'robot_name', default_value='nav2_forklift', description='name of the robot'
-        # )
-
-        # declare_robot_sdf_cmd = DeclareLaunchArgument(
-        #     'robot_sdf',
-        #     default_value=os.path.join(desc_dir, 'urdf', 'forklift.urdf.xacro'),
-        #     description='Full path to robot sdf file to spawn the robot in gazebo',
-        # )
+    declare_robot_sdf_cmd = DeclareLaunchArgument(
+        'robot_sdf',
+        default_value=os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro'),
+        description='Full path to robot sdf file to spawn the robot in gazebo',
+    )
 
     start_robot_state_publisher_cmd = Node(
         condition=IfCondition(use_robot_state_pub),
@@ -280,6 +267,7 @@ def generate_launch_description():
                           'use_sim_time': use_sim_time,
                           'robot_name': robot_name,
                           'robot_sdf': robot_sdf,
+                          'bridge_config': bridge_config,
                           'x_pose': pose['x'],
                           'y_pose': pose['y'],
                           'z_pose': pose['z'],
@@ -299,6 +287,7 @@ def generate_launch_description():
     ld.add_action(declare_params_file_cmd)
     ld.add_action(declare_autostart_cmd)
     ld.add_action(declare_use_composition_cmd)
+    ld.add_action(declare_bridge_config_cmd)
 
     ld.add_action(declare_rviz_config_file_cmd)
     ld.add_action(declare_use_simulator_cmd)

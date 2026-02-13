@@ -39,11 +39,12 @@
 
   <gazebo reference="${name}_nav_lidar">
       <sensor name="${name}_nav_lidar" type="gpu_lidar">
+      <static>false</static>
       <always_on>true</always_on>
       <visualize>true</visualize>
       <pose>0 0 0 0 0 0</pose>
       <update_rate>10</update_rate>
-      <topic>scan</topic>
+      <topic>/lidar_${name}/scan</topic>
       <gz_frame_id>${name}_nav_lidar</gz_frame_id>
       <lidar>
         <scan>

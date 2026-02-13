@@ -23,8 +23,9 @@
 
 <!-- <xacro:detection_lidar name="front"  x="0.0"  y="0.0" z="2.0" roll="0" pitch="0" yaw="0" resolution="1"/> -->
 
-<xacro:nav_lidar name="back"  x="-1.65"  y="0.0" z="-0.1" roll="0" pitch="0" yaw="3.14509" resolution="1"/>
-<!-- <xacro:nav_lidar name="front"  x="0"  y="0.4" z="0.1" roll="0" pitch="0" yaw="-1.57" resolution="1"/> -->
+<xacro:nav_lidar name="back"  x="-1.65"  y="0.0" z="0.0" roll="0" pitch="0" yaw="3.14509" resolution="1"/>
+<xacro:nav_lidar name="rf"  x="0.3"  y="-0.6" z="0.0" roll="0" pitch="0" yaw="-1.57" resolution="1"/>
+<xacro:nav_lidar name="lf"  x="0.3"  y="+0.6" z="0.0" roll="0" pitch="0" yaw="+1.57" resolution="1"/>
 
 <!-- <xacro:detection_lidar name="front"  x="0.0"  y="0.0" z="0.6" roll="0" pitch="0" yaw="0" resolution="1"/> -->
 
