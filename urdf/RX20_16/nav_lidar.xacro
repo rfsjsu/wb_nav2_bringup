@@ -43,15 +43,15 @@
       <visualize>true</visualize>
       <pose>0 0 0 0 0 0</pose>
       <update_rate>10</update_rate>
-      <topic>/scan</topic>
-      <gz_frame_id>base_scan</gz_frame_id>
+      <topic>scan</topic>
+      <gz_frame_id>${name}_nav_lidar</gz_frame_id>
       <lidar>
         <scan>
           <horizontal>
             <samples>360</samples>
             <resolution>1.000000</resolution>
-            <min_angle>-3.14159</min_angle>
-            <max_angle>3.14159</max_angle>
+            <min_angle>-1.5708</min_angle>
+            <max_angle>1.5708</max_angle>
           </horizontal>
         </scan>
         <range>

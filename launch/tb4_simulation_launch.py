@@ -75,7 +75,7 @@ def generate_launch_description():
     headless = LaunchConfiguration('headless')
     world = LaunchConfiguration('world')
     pose = {
-        'x': LaunchConfiguration('x_pose', default='-4.00'),  # Warehouse: 2.12
+        'x': LaunchConfiguration('x_pose', default='0.00'),  # Warehouse: 2.12
         'y': LaunchConfiguration('y_pose', default='0.00'),  # Warehouse: -21.3
         'z': LaunchConfiguration('z_pose', default='0.15'),
         'R': LaunchConfiguration('roll', default='0.00'),
