@@ -275,6 +275,9 @@ def generate_launch_description():
                           'pitch': pose['P'],
                           'yaw': pose['Y']}.items())
     
+    # This dual laser code from:
+    # https://github.com/pradyum/dual_laser_merger/blob/jazzy/README.md
+    #
     dual_laser_merger_node = ComposableNodeContainer(
         name='demo_container',
         namespace='',

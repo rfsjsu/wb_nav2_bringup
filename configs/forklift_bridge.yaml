@@ -37,11 +37,11 @@
   direction: GZ_TO_ROS
 
 # top lidar
-# - ros_topic_name: "scan"
-#   gz_topic_name: "/lidar_top/scan"
-#   ros_type_name: "sensor_msgs/msg/LaserScan"
-#   gz_type_name: "gz.msgs.LaserScan"
-#   direction: GZ_TO_ROS
+- ros_topic_name: "lidar_top/scan"
+  gz_topic_name: "/lidar_top/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
 
 # back lidar
 - ros_topic_name: "lidar_back/scan"
