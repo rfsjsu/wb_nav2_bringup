@@ -296,7 +296,7 @@ def generate_launch_description():
                     {'laser_1_x_offset': 0.0},
                     {'laser_1_y_offset': 0.0},
                     {'laser_1_yaw_offset': 0.0},
-                    {'laser_2_x_offset': -0.04},
+                    {'laser_2_x_offset': 0.0},
                     {'laser_2_y_offset': 0.0},
                     {'laser_2_yaw_offset': 0.0},
                     {'tolerance': 0.01},
