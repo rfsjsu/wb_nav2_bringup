@@ -32,20 +32,8 @@ from launch.conditions import IfCondition
 from launch.event_handlers import OnShutdown
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration, PythonExpression
-
-from launch_ros.actions import Node
-
-# Pick the environment for the robot
-#
-# WORLD_YAML = 'depot.yaml'
-# WORLD_SDF = 'depot.sdf'
-WORLD_YAML = 'warehouse.yaml'
-WORLD_SDF = 'warehouse.sdf'
-
-# WORLD_SDF = 'test.world'
-
-TB4_BOT = True
-
+from launch_ros.actions import ComposableNodeContainer, Node
+from launch_ros.descriptions import ComposableNode
 
 def generate_launch_description():
     # Get the launch directory
@@ -74,13 +62,14 @@ def generate_launch_description():
     use_rviz = LaunchConfiguration('use_rviz')
     headless = LaunchConfiguration('headless')
     world = LaunchConfiguration('world')
+    bridge_config = LaunchConfiguration('bridge_config')
     pose = {
-        'x': LaunchConfiguration('x_pose', default='-4.00'),  # Warehouse: 2.12
+        'x': LaunchConfiguration('x_pose', default='-8.00'),  # Warehouse: 2.12
         'y': LaunchConfiguration('y_pose', default='0.00'),  # Warehouse: -21.3
-        'z': LaunchConfiguration('z_pose', default='0.01'),
-        'R': LaunchConfiguration('roll', default='0.00'),
-        'P': LaunchConfiguration('pitch', default='0.00'),
-        'Y': LaunchConfiguration('yaw', default='0.00'),  # Warehouse: 1.57
+        'z': LaunchConfiguration('z_pose', default='0.15'),
+        'R': LaunchConfiguration('roll', default='0'),
+        'P': LaunchConfiguration('pitch', default='0'),
+        'Y': LaunchConfiguration('yaw', default='0'),  # Warehouse: 1.57
     }
     robot_name = LaunchConfiguration('robot_name')
     robot_sdf = LaunchConfiguration('robot_sdf')
@@ -104,7 +93,7 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
-        default_value=os.path.join(bringup_dir, 'maps', WORLD_YAML),  # Try warehouse.yaml!
+        default_value=os.path.join(bringup_dir, 'maps', 'warehouse.yaml'),  # Try warehouse.yaml!
         description='Full path to map file to load',
     )
 
@@ -112,6 +101,12 @@ def generate_launch_description():
         'use_sim_time',
         default_value='true',
         description='Use simulation (Gazebo) clock if true',
+    )
+
+    declare_bridge_config_cmd = DeclareLaunchArgument(
+        'bridge_config',
+        default_value=os.path.join(bringup_dir, 'configs', 'tb4_bridge.yaml'),
+        description='Full path to robot sdf file to spawn the robot in gazebo'
     )
 
     declare_params_file_cmd = DeclareLaunchArgument(
@@ -166,30 +161,19 @@ def generate_launch_description():
 
     declare_world_cmd = DeclareLaunchArgument(
         'world',
-        default_value=os.path.join(sim_dir, 'worlds', WORLD_SDF),  # Try warehouse.sdf!
+        default_value=os.path.join(sim_dir, 'worlds', 'warehouse.sdf'),  # Try warehouse.sdf!
         description='Full path to world model file to load',
     )
 
-    if(TB4_BOT):
-        declare_robot_name_cmd = DeclareLaunchArgument(
-            'robot_name', default_value='nav2_turtlebot4', description='name of the robot'
-        )
+    declare_robot_name_cmd = DeclareLaunchArgument(
+        'robot_name', default_value='nav2_turtlebot4', description='name of the robot'
+    )
 
-        declare_robot_sdf_cmd = DeclareLaunchArgument(
-            'robot_sdf',
-            default_value=os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro'),
-            description='Full path to robot sdf file to spawn the robot in gazebo',
-        )
-    else:
-        declare_robot_name_cmd = DeclareLaunchArgument(
-            'robot_name', default_value='nav2_forklift', description='name of the robot'
-        )
-
-        declare_robot_sdf_cmd = DeclareLaunchArgument(
-            'robot_sdf',
-            default_value=os.path.join(desc_dir, 'urdf', 'forklift.urdf.xacro'),
-            description='Full path to robot sdf file to spawn the robot in gazebo',
-        )
+    declare_robot_sdf_cmd = DeclareLaunchArgument(
+        'robot_sdf',
+        default_value=os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro'),
+        description='Full path to robot sdf file to spawn the robot in gazebo',
+    )
 
     start_robot_state_publisher_cmd = Node(
         condition=IfCondition(use_robot_state_pub),
@@ -271,12 +255,57 @@ def generate_launch_description():
                           'use_sim_time': use_sim_time,
                           'robot_name': robot_name,
                           'robot_sdf': robot_sdf,
+                          'bridge_config': bridge_config,
                           'x_pose': pose['x'],
                           'y_pose': pose['y'],
                           'z_pose': pose['z'],
                           'roll': pose['R'],
                           'pitch': pose['P'],
                           'yaw': pose['Y']}.items())
+    
+    # This dual laser code from:
+    # https://github.com/pradyum/dual_laser_merger/blob/jazzy/README.md
+    #
+    dual_laser_merger_node = ComposableNodeContainer(
+        name='demo_container',
+        namespace='',
+        package='rclcpp_components',
+        executable='component_container',
+        composable_node_descriptions=[
+            ComposableNode(
+                package='dual_laser_merger',
+                plugin='merger_node::MergerNode',
+                name='dual_laser_merger',
+                parameters=[
+                    {'laser_1_topic': 'lidar_lf/scan'},
+                    {'laser_2_topic': 'lidar_rf/scan'},
+                    {'merged_scan_topic': 'scan'},
+                    {'target_frame': 'base_scan'},
+                    {'laser_1_x_offset': 0.0},
+                    {'laser_1_y_offset': 0.0},
+                    {'laser_1_yaw_offset': 0.0},
+                    {'laser_2_x_offset': 0.0},
+                    {'laser_2_y_offset': 0.0},
+                    {'laser_2_yaw_offset': 0.0},
+                    {'tolerance': 0.01},
+                    {'queue_size': 5},
+                    {'angle_increment': 0.001},
+                    {'scan_time': 0.067},
+                    {'range_min': 0.01},
+                    {'range_max': 25.0},
+                    {'min_height': -1.0},
+                    {'max_height': 1.0},
+                    {'angle_min': -3.141592654},
+                    {'angle_max': 3.141592654},
+                    {'inf_epsilon': 1.0},
+                    {'use_inf': True},
+                    {'allowed_radius': 0.45},
+                    {'enable_shadow_filter': True},
+                    {'enable_average_filter': True},
+                    ],
+            )
+        ]
+    )
 
     # Create the launch description and populate
     ld = LaunchDescription()
@@ -290,6 +319,7 @@ def generate_launch_description():
     ld.add_action(declare_params_file_cmd)
     ld.add_action(declare_autostart_cmd)
     ld.add_action(declare_use_composition_cmd)
+    ld.add_action(declare_bridge_config_cmd)
 
     ld.add_action(declare_rviz_config_file_cmd)
     ld.add_action(declare_use_simulator_cmd)
@@ -312,5 +342,7 @@ def generate_launch_description():
     ld.add_action(start_robot_state_publisher_cmd)
     ld.add_action(rviz_cmd)
     ld.add_action(bringup_cmd)
+
+    ld.add_action(dual_laser_merger_node)
 
     return ld

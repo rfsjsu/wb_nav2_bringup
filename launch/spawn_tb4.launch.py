@@ -35,8 +35,9 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     namespace = LaunchConfiguration('namespace')
     use_simulator = LaunchConfiguration('use_simulator')
+    bridge_config = LaunchConfiguration('bridge_config')
     robot_name = LaunchConfiguration('robot_name')
-    # robot_sdf = LaunchConfiguration('robot_sdf')
+    robot_sdf = LaunchConfiguration('robot_sdf')
     pose = {'x': LaunchConfiguration('x_pose', default='-8.00'),
             'y': LaunchConfiguration('y_pose', default='-0.50'),
             'z': LaunchConfiguration('z_pose', default='0.01'),
@@ -61,36 +62,43 @@ def generate_launch_description():
         description='Use simulation (Gazebo) clock if true',
     )
 
-    if(TB4_BOT):
-        declare_robot_name_cmd = DeclareLaunchArgument(
-            'robot_name',
-            default_value='turtlebot4',
-            description='name of the robot')
+    declare_bridge_config_cmd = DeclareLaunchArgument(
+        'bridge_config',
+        default_value=os.path.join(desc_dir, 'configs', 'tb4_bridge.yaml'),
+        description='Full path to robot sdf file to spawn the robot in gazebo')
+    
+    declare_robot_name_cmd = DeclareLaunchArgument(
+        'robot_name',
+        default_value='turtlebot4',
+        description='name of the robot')
 
-        declare_robot_sdf_cmd = DeclareLaunchArgument(
-            'robot_sdf',
-            default_value=os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro'),
-            description='Full path to robot sdf file to spawn the robot in gazebo')
-    else:
-        declare_robot_name_cmd = DeclareLaunchArgument(
-            'robot_name',
-            default_value='forklift',
-            description='name of the robot')
-
-        declare_robot_sdf_cmd = DeclareLaunchArgument(
-            'robot_sdf',
-            default_value=os.path.join(desc_dir, 'urdf', 'forklift.urdf.xacro'),
-            description='Full path to robot sdf file to spawn the robot in gazebo')
+    declare_robot_sdf_cmd = DeclareLaunchArgument(
+        'robot_sdf',
+        default_value=os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro'),
+        description='Full path to robot sdf file to spawn the robot in gazebo')
         
+    # bridge = Node(
+    #     package='ros_gz_bridge',
+    #     executable='parameter_bridge',
+    #     name='bridge_ros_gz',
+    #     parameters=[
+    #         {
+    #             'config_file': os.path.join(
+    #                 sim_dir, bridge_file
+    #             ),
+    #             'use_sim_time': use_sim_time,
+    #         }
+    #     ],
+    #     output='screen',
+    # )
+
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
         name='bridge_ros_gz',
         parameters=[
             {
-                'config_file': os.path.join(
-                    sim_dir, 'configs', 'tb4_bridge.yaml'
-                ),
+                'config_file': bridge_config,
                 'use_sim_time': use_sim_time,
             }
         ],
@@ -143,6 +151,7 @@ def generate_launch_description():
     # ld.add_action(declare_robot_sdf_cmd)
     ld.add_action(declare_use_simulator_cmd)
     ld.add_action(declare_use_sim_time_cmd)
+    ld.add_action(declare_bridge_config_cmd)
 
     ld.add_action(set_env_vars_resources)
 
