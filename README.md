@@ -23,7 +23,7 @@ To build:
 ```
 mkdir -p ~/ros2_ws/src
 cd ~/ros2_ws/src
-git clone https://github.com/rfsjsu/wb_nav2_bringup.git
+git clone -b RX20_16_Forklift https://github.com/rfsjsu/wb_nav2_bringup.git
 git clone -b jazzy https://github.com/pradyum/dual_laser_merger.git
 cd ~/ros2_ws
 source /opt/ros/jazzy/setup.bash
@@ -31,11 +31,22 @@ rosdep install --from-paths src --ignore-src -r -y
 colcon build --symlink-install
 ```
 
-To run Gazebo Sim and RViz:
+To run the RX20_16 forklift in Gazebo Sim and RViz:
 ```
+export WS_PATH="$HOME/ros2_ws"
 cd ~/ros2_ws
 source install/setup.bash
 bash ./src/wb_nav2_bringup/scripts/rx20_16.launch.sh
+```
+
+To run the Turtlebot 4 demo:
+```
+ros2 launch wb_nav2_bringup tb4_simulation_launch.py headless:=False
+```
+
+To run the Turtlebot 3 demo:
+```
+ros2 launch wb_nav2_bringup tb3_simulation_launch.py headless:=False
 ```
 
 ### Topic Specific Documentation
