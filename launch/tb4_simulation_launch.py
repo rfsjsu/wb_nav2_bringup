@@ -67,6 +67,11 @@ def generate_launch_description():
     use_composition = LaunchConfiguration('use_composition')
     use_respawn = LaunchConfiguration('use_respawn')
 
+    # YOLO configuration
+    use_yolo = LaunchConfiguration('use_yolo')
+    yolo_model = LaunchConfiguration('yolo_model')
+    yolo_device = LaunchConfiguration('yolo_device')
+
     # Launch configuration variables specific to simulation
     rviz_config_file = LaunchConfiguration('rviz_config_file')
     use_simulator = LaunchConfiguration('use_simulator')
@@ -170,6 +175,24 @@ def generate_launch_description():
         description='Full path to world model file to load',
     )
 
+    declare_use_yolo_cmd = DeclareLaunchArgument(
+        'use_yolo', 
+        default_value='True', 
+        description='Wheter to start YOLO object detection'
+        )
+    
+    declare_yolo_model_cmd = DeclareLaunchArgument(
+        'yolo_model',
+        default_value='yolov8l-cls.pt',
+        description='YOLO model to use'
+    )
+
+    declare_yolo_device_cmd = DeclareLaunchArgument(
+        'yolo_device',
+        default_value='cuda:0',
+        description='Device to run on cudo:0'
+    )
+
     if(TB4_BOT):
         declare_robot_name_cmd = DeclareLaunchArgument(
             'robot_name', default_value='nav2_turtlebot4', description='name of the robot'
@@ -202,6 +225,26 @@ def generate_launch_description():
             {'use_sim_time': use_sim_time, 'robot_description': Command(['xacro', ' ', robot_sdf])}
         ],
         remappings=remappings,
+    )
+
+    yolo_detector_node = Node(
+        condition=IfCondition(use_yolo),
+        package='wb_nav2_bringup',
+        executable='yolo_detector.py',
+        name='yolo_detector',
+        namespace=namespace,
+        output='screen',
+        parameters=[{
+            'use_sim_time': use_sim_time,
+            'model': yolo_model,
+            'device': yolo_device,
+            'confidence_threshold': 0.3,
+            'iou_threshold': 0.6,
+            }],
+        remappings=[
+            ('/rgbd_camera/image', '/rgbd_camera/image'),
+            ('/detections', '/yolo/detections'),
+        ]
     )
 
     rviz_cmd = IncludeLaunchDescription(
@@ -301,6 +344,11 @@ def generate_launch_description():
     ld.add_action(declare_robot_sdf_cmd)
     ld.add_action(declare_use_respawn_cmd)
 
+    ld.add_action(declare_use_yolo_cmd)
+    ld.add_action(declare_yolo_model_cmd)
+    ld.add_action(declare_yolo_device_cmd)
+
+
     ld.add_action(set_env_vars_resources)
     ld.add_action(world_sdf_xacro)
     ld.add_action(remove_temp_sdf_file)
@@ -310,6 +358,7 @@ def generate_launch_description():
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(start_robot_state_publisher_cmd)
+    ld.add_action(yolo_detector_node)
     ld.add_action(rviz_cmd)
     ld.add_action(bringup_cmd)
 
