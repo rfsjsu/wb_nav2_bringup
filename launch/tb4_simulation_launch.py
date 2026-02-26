@@ -307,6 +307,22 @@ def generate_launch_description():
         ]
     )
 
+    load_joint_state_broadcaster = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+                'joint_state_broadcaster'],
+        output='screen'
+    )
+    load_position_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'position_control'],
+        output='screen'
+    )
+    load_velocity_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'inactive',
+             'velocity_control'],
+        output='screen'
+    )
+
     # Create the launch description and populate
     ld = LaunchDescription()
 
@@ -344,5 +360,11 @@ def generate_launch_description():
     ld.add_action(bringup_cmd)
 
     ld.add_action(dual_laser_merger_node)
+
+    # ros control nodes
+    ld.add_action( load_position_controller )
+    ld.add_action( load_velocity_controller )
+    ld.add_action( load_joint_state_broadcaster )
+
 
     return ld
