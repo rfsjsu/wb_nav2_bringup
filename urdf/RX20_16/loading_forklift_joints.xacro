@@ -60,8 +60,8 @@
     <child link="lift_link" />
     <origin xyz="0.134 0 0.22" rpy="0 0 0" />
     <axis xyz="0 0 1" />
-    <limit lower="-0.2" upper="2" effort="100" velocity="0.3"/>
-     <!-- <dynamics damping="100.0" friction="1"/> -->
+    <limit lower="-0.149" upper="1.5" effort="100" velocity="0.3"/>
+     <dynamics damping="1.0" friction="0.001"/>
   </joint>
 
   <link name="sideshift_link">
@@ -91,7 +91,7 @@
     <child link="sideshift_link" />
     <origin xyz="0.06 0 -0.25" rpy="0 0 0" />
     <axis xyz="0 1 0" />
-    <limit lower="-0.2" upper="0.2" effort="100" velocity="0.3"/>
+    <limit lower="-0.15" upper="0.2" effort="100" velocity="0.3"/>
      <dynamics damping="10" friction="1"/>
   </joint>
 

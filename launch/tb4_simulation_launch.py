@@ -313,12 +313,12 @@ def generate_launch_description():
         output='screen'
     )
     load_position_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'inactive',
              'position_control'],
         output='screen'
     )
     load_velocity_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'inactive',
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'velocity_control'],
         output='screen'
     )
