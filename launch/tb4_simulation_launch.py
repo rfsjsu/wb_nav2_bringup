@@ -27,6 +27,7 @@ from launch.actions import (
     IncludeLaunchDescription,
     OpaqueFunction,
     RegisterEventHandler,
+    TimerAction,
 )
 from launch.conditions import IfCondition
 from launch.event_handlers import OnShutdown
@@ -307,20 +308,30 @@ def generate_launch_description():
         ]
     )
 
+    # Nodes for controlling the fork raise/lower.
+    #
+    # twist_to_multiarray enables teleop keyboard control of the fork.
+    #
+    # Delay for controller activation added to wait for the controller_manager to 
+    # to start up first.  Without the delay the controllers need to be started
+    # manually.
     load_joint_state_broadcaster = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
                 'joint_state_broadcaster'],
-        output='screen'
-    )
-    load_position_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'inactive',
-             'position_control'],
         output='screen'
     )
     load_velocity_controller = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'velocity_control'],
         output='screen'
+    )
+    twist_to_multiarray = ExecuteProcess(
+        cmd=['python', os.path.join(launch_dir, 'twist_to_multiarray.py')],
+        output='screen'
+    )
+    delayed_controller_activation = TimerAction(
+        period=10.0,
+        actions=[load_joint_state_broadcaster, load_velocity_controller, twist_to_multiarray]
     )
 
     # Create the launch description and populate
@@ -361,10 +372,7 @@ def generate_launch_description():
 
     ld.add_action(dual_laser_merger_node)
 
-    # ros control nodes
-    ld.add_action( load_position_controller )
-    ld.add_action( load_velocity_controller )
-    ld.add_action( load_joint_state_broadcaster )
-
+    # ros control nodes for fork
+    ld.add_action( delayed_controller_activation )
 
     return ld
