@@ -11,14 +11,14 @@
 
     <collision >
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry> <mesh filename="$(find wb_nav2_bringup)/urdf/RX20_16/meshes/tilt_link.dae" />
+    <geometry> <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/tilt_link.dae" />
     </geometry>
     </collision>
 
     <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <geometry>
-          <mesh filename="$(find wb_nav2_bringup)/urdf/RX20_16/meshes/tilt_link.dae" />
+          <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/tilt_link.dae" />
     </geometry>
     </visual>
   </link>
@@ -42,26 +42,26 @@
 
     <collision >
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry> <mesh filename="$(find wb_nav2_bringup)/urdf/RX20_16/meshes/lift_link.dae" />
+    <geometry> <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/lift_link.dae" />
     </geometry>
     </collision>
 
     <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <geometry>
-          <mesh filename="$(find wb_nav2_bringup)/urdf/RX20_16/meshes/lift_link.dae" />
+          <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/lift_link.dae" />
     </geometry>
     </visual>
   </link>
     
   <!-- prismatic link -->
-  <joint name="lift_joint" type="fixed">
+  <joint name="lift_joint" type="prismatic">
     <parent link="tilt_link" />
     <child link="lift_link" />
     <origin xyz="0.134 0 0.22" rpy="0 0 0" />
     <axis xyz="0 0 1" />
-    <limit lower="-0.2" upper="2" effort="100" velocity="0.3"/>
-     <dynamics damping="100.0" friction="1"/>
+    <limit lower="-0.149" upper="1.5" effort="100" velocity="0.3"/>
+     <dynamics damping="1.0" friction="0.001"/>
   </joint>
 
   <link name="sideshift_link">
@@ -73,14 +73,14 @@
 
     <collision >
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry> <mesh filename="$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link.dae" />
+    <geometry> <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link.dae" />
     </geometry>
     </collision>
 
     <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <geometry>
-          <mesh filename="$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link.dae" />
+          <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link.dae" />
     </geometry>
     </visual>
   </link>
@@ -91,7 +91,7 @@
     <child link="sideshift_link" />
     <origin xyz="0.06 0 -0.25" rpy="0 0 0" />
     <axis xyz="0 1 0" />
-    <limit lower="-0.2" upper="0.2" effort="100" velocity="0.3"/>
+    <limit lower="-0.15" upper="0.2" effort="100" velocity="0.3"/>
      <dynamics damping="10" friction="1"/>
   </joint>
 
@@ -195,5 +195,25 @@
     <axis xyz="0 0 1" />
   </joint>
 
+    <!-- Gazebo plugin configuration -->
+    <ros2_control name="2DofPosition" type="system">
+        <hardware>
+            <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        </hardware>
+        <joint name="lift_joint">
+            <command_interface name="position" />
+            <command_interface name="velocity" />
+            <state_interface name="position">
+                <param name="initial_value">0.3</param>
+            </state_interface>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+    </ros2_control>
+    <gazebo>
+        <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+            <parameters>$(find wb_nav2_bringup)/configs/controller.yaml</parameters>
+        </plugin>
+    </gazebo>
 
   </robot>

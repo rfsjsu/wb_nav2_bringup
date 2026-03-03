@@ -13,13 +13,13 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="$(find wb_nav2_bringup)/urdf/RX20_16/meshes/body.dae" />
+        <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/body.dae" />
       </geometry>
     </collision>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="$(find wb_nav2_bringup)/urdf/RX20_16/meshes/body.dae" />
+        <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/body.dae" />
       </geometry>
     </visual>
   </link>

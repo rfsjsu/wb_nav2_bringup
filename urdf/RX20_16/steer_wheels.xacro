@@ -11,26 +11,24 @@
     <xacro:cylinder_inertia mass="1" r="0.05" l="0.225" />
     <mass value= "1"/>
     </inertial>
-
     <collision >
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-        <mesh filename="$(find wb_nav2_bringup)/urdf/RX20_16/meshes/steering_rod.dae" />
-    </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+          <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/steering_rod.dae" />
+      </geometry>
     </collision>
-
     <visual >
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-        <mesh filename="$(find wb_nav2_bringup)/urdf/RX20_16/meshes/steering_rod.dae" />
-    </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+          <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/steering_rod.dae" />
+      </geometry>
     </visual>
   </link>
     
-  <joint name="wheel_${name}_steering_joint" type="revolute">
+  <joint name="wheel_${name}_steering_joint" type="fixed">
     <parent link="base_link" />
     <child link="wheel_${name}_steering_link" />
-    <origin xyz="${x_steering} ${y_steering} ${z_steering }" rpy="0 0 1.570796" />
+    <origin xyz="${x_steering} ${y_steering} ${z_steering}" rpy="0 0 1.570796" />
     <!-- <origin xyz="-0.662 0.247 0.115" rpy="0 0 0" /> -->
     <axis xyz="0 0 ${1*flip}" />
     <limit lower="-1.0" upper="1.0" effort="30" velocity="0.3"/>
@@ -55,12 +53,12 @@
     <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <geometry>
-        <mesh filename="$(find wb_nav2_bringup)/urdf/RX20_16/meshes/rear_wheel.dae" />
+        <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/rear_wheel.dae" />
     </geometry>
     </visual>
   </link>
     
-  <joint name="wheel_${name}_joint" type="continuous">
+  <joint name="wheel_${name}_joint" type="fixed">
     <parent link="wheel_${name}_steering_link" />
     <child link="wheel_${name}_link" />
     <origin xyz=" 0 0 -0.09" rpy="0 1.570796 0" />

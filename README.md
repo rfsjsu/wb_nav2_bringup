@@ -48,15 +48,64 @@ To run the Turtlebot 3 demo:
 ```
 ros2 launch wb_nav2_bringup tb3_simulation_launch.py headless:=False
 ```
+<br>
 
 ### Topic Specific Documentation
+---
+#### Raising And Lowering The Forklift Fork
 
-* TBD
+The fork is mounted to the forklift body through a prismatic joint and is controlled with `ros2_control`.
+
+Install the ROS2 control libriaries
+```
+sudo apt install ros-jazzy-ros-control
+sudo apt install ros-jazzy-ros2-controllers 
+sudo apt install ros-jazzy-ros2-control-demo
+sudo apt install ros-jazzy-gz-ros2-control
+```
+
+You can manually raise and lower the fork with `teleop_twist_keyboard`.  After starting the main code with `rx20_16.launch.sh`, run the teleop in another terminal
+
+```
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
+and you will see this in your terminal
+```
+This node takes keypresses from the keyboard and publishes them
+as Twist/TwistStamped messages. It works best with a US keyboard layout.
+---------------------------
+Moving around:
+   u    i    o
+   j    k    l
+   m    ,    .
+
+For Holonomic mode (strafing), hold down the shift key:
+---------------------------
+   U    I    O
+   J    K    L
+   M    <    >
+
+t : up (+z)
+b : down (-z)
+
+anything else : stop
+
+q/z : increase/decrease max speeds by 10%
+w/x : increase/decrease only linear speed by 10%
+e/c : increase/decrease only angular speed by 10%
+
+CTRL-C to quit
+```
+The fork can be raised and lowered with the `t` and `b` keys. The fork motion can be stopped at any point by pressing the `g` or `k` key.
+
 
 ## To Do
 
-* TBD
+* Add fork control to the gamepad teleop.
+* Add apriltag docking code and pallet with apriltag.
 
 ## History / Current State
 
 v0.1: RX20 16 forklift with differential drive.  World is a small warehouse.  LiDAR streams data and can be visualized in rviz2. Navigation and localization work.
+
+v0.2: RX20 16 forklift fork works and can pick up a pallet with manual control.
