@@ -5,6 +5,17 @@ find_package(ament_cmake REQUIRED)
 find_package(nav2_common REQUIRED)
 find_package(navigation2 REQUIRED)
 
+# For Automatic Addison Apriltags
+find_package(ament_cmake_python REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
+# find_package(apriltag_ros REQUIRED) # sudo apt install ros-jazzy-apriltag-ros
+# find_package(apriltag_msgs REQUIRED)
+find_package(image_proc REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+
 nav2_package()
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
