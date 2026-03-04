@@ -103,8 +103,8 @@ def generate_launch_description():
         name='apriltag_node',
         namespace=camera_namespace,
         remappings=[
-            ('image_rect', '/image_rect'),
-            ('camera_info', '/camera_info'),
+            ('image_rect', 'image_rect'),
+            ('camera_info', 'camera_info'),
         ],
         parameters=[
             apriltag_config_file,
