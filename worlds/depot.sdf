@@ -52,9 +52,15 @@
     <!-- Wooden Pallet -->
     <include>
       <!-- <uri>model://pallet</uri> -->
-      <uri>https://fuel.gazebosim.org/1.0/MovAi/models/pallet</uri>
+      <uri>https://fuel.gazebosim.org/1.0/MovAi/models/pallet_box_mobile</uri>
       <name>pallet_1</name>
       <pose>0 0 0.1 0 0 0</pose> <!-- x y z roll pitch yaw -->
+    </include>
+    <include>
+      <name>Apriltag36_11_00000</name>
+      <pose>-0.59 0 0.5 1.5708 0 1.5708</pose>
+      <static>true</static>
+      <uri>model://Apriltag36_11_00000</uri>
     </include>
 
   </world>

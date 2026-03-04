@@ -8,6 +8,10 @@ WB_PATH="$WS_PATH/install/wb_nav2_bringup/share/wb_nav2_bringup/"
 # https://github.com/ros-controls/gz_ros2_control/issues/390
 export GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/jazzy/lib/
 
+export GZ_SIM_RESOURCE_PATH="$GZ_SIM_RESOURCE_PATH:$WB_PATH/models"
+
+# export GZ_SIM_RESOURCE_PATH="$WB_PATH/models"
+
 ros2 launch wb_nav2_bringup tb4_simulation_launch.py \
     headless:=False \
     robot_name:="RX20_16" \
