@@ -18,7 +18,7 @@
 <xacro:rx20_front_wheel name="right" x_loading="0.0" y_loading="-0.466" z_loading="0.0" radius="0.18" width="0.18" flip="-1" />
 <xacro:rx20_front_wheel name="left" x_loading="0.0" y_loading="0.466" z_loading="0.0" radius="0.18" width="0.18" flip="-1" />
 
-<xacro:camera name="front"  x="0.4"  y="0" z="0.3" roll="0" pitch="0" yaw="0"/>
+<xacro:camera name="front"  x="0.4"  y="0" z="0.3" roll="0.0" pitch="0.0" yaw="0.0"/>
 
 <!-- <xacro:nav_lidar name="top"  x="0."  y="0.0" z="2" roll="0" pitch="0" yaw="0.0" resolution="1"/> -->
 <!-- <xacro:detection_lidar name="front"  x="0.0"  y="0.0" z="2.0" roll="0" pitch="0" yaw="0" resolution="1"/> -->

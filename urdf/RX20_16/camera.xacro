@@ -3,17 +3,17 @@
 <robot name="RX20_16" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <xacro:macro name="camera" params="name x y z roll pitch yaw ">
-  <link name="${name}_camera_frame">
+  <link name="${name}_camera_link">
       <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <inertia ixx="0.001" ixy="0.000" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
       <mass value= "0.01"/>
       </inertial>
 
-      <visual name="${name}_camera_frame">
+      <visual name="${name}_camera_link">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-       <box size="0.1 0.1 0.1"/>
+       <box size="0.1 0.05 0.05"/>
       </geometry>
       <material name="red"> 
         <color rgba="1 0 0 1.0"/> 
@@ -23,13 +23,25 @@
 
   <joint name="${name}_camera_joint" type="fixed">
     <parent link="base_link" />
-    <child link="${name}_camera_frame" />
+    <child link="${name}_camera_link" />
     <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}" />
     <axis xyz="0 0 1" />
   </joint>
 
+  <joint name="camera_optical_joint" type="fixed">
+    <!-- these values have to be these values otherwise the gazebo camera
+        image won't be aligned properly with the frame it is supposedly
+        originating from -->
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+    <parent link="${name}_camera_link"/>
+    <child link="${name}_camera_link_optical"/>
+  </joint>
+
+  <link name="${name}_camera_link_optical">
+  </link>
+
     <!-- Gazebo links and joints -->
-  <gazebo reference="${name}_camera_frame">
+  <gazebo reference="${name}_camera_link">
     <sensor name="rgbd_camera" type="rgbd_camera">
       <always_on>1</always_on>
       <camera>
@@ -42,7 +54,7 @@
           <near>0.3</near>
           <far>100</far>
         </clip>
-        <optical_frame_id>${name}_camera_frame</optical_frame_id>
+        <optical_frame_id>${name}_camera_link_optical</optical_frame_id>
       </camera>
       <update_rate>10</update_rate>
       <visualize>true</visualize>

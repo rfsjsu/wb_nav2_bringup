@@ -61,7 +61,7 @@ public:
   : Node("detected_dock_pose_publisher")
   {
     // Declare parameters with default values and documentation
-    this->declare_parameter("parent_frame", "front_camera_frame");
+    this->declare_parameter("parent_frame", "front_camera_link_optical");
     this->declare_parameter("child_frame", "tag36h11:0");
     this->declare_parameter("publish_rate", 10.0);  // Hz
 

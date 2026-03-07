@@ -414,24 +414,24 @@ docking_server:
     base_frame: "base_link"
     fixed_frame: "odom"
     dock_backwards: false
-    dock_prestaging_tolerance: 0.5
+    dock_prestaging_tolerance: 1.0
 
     # Types of docks
     dock_plugins: ['rosmaster_x3_dock']
     rosmaster_x3_dock:
-      plugin: 'opennav_docking::SimpleChargingDock'
+      plugin: 'opennav_docking::SimpleNonChargingDock'
       docking_threshold: 0.05
-      staging_x_offset: -1.0
-      staging_yaw_offset: 0.0 #3.14
+      staging_x_offset: 2.0
+      staging_yaw_offset: 3.14
       use_external_detection_pose: true
       use_battery_status: false # true
       use_stall_detection: false # true
 
       external_detection_timeout: 1.0
-      external_detection_translation_x: -0.18
+      external_detection_translation_x: 0.0 #-0.18
       external_detection_translation_y: 0.0
-      external_detection_rotation_roll: -1.57
-      external_detection_rotation_pitch: -1.57
+      external_detection_rotation_roll: 1.57
+      external_detection_rotation_pitch: 1.57
       external_detection_rotation_yaw: 0.0
       filter_coef: 0.1
 
@@ -451,7 +451,7 @@ docking_server:
       k_delta: 2.0
       beta: 0.4
       lamda: 2.0
-      v_linear_min: 0.05
+      v_linear_min: 0.005
       v_linear_max: 0.05
       v_angular_max: 0.75
       use_collision_detection: true

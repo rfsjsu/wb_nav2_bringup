@@ -65,12 +65,12 @@ def generate_launch_description():
     world = LaunchConfiguration('world')
     bridge_config = LaunchConfiguration('bridge_config')
     pose = {
-        'x': LaunchConfiguration('x_pose', default='-10.00'),  # Warehouse: 2.12
+        'x': LaunchConfiguration('x_pose', default='-2.00'),  # Warehouse: 2.12
         'y': LaunchConfiguration('y_pose', default='0.00'),  # Warehouse: -21.3
         'z': LaunchConfiguration('z_pose', default='0.15'),
         'R': LaunchConfiguration('roll', default='0'),
         'P': LaunchConfiguration('pitch', default='0'),
-        'Y': LaunchConfiguration('yaw', default='0'),  # Warehouse: 1.57
+        'Y': LaunchConfiguration('yaw', default='3.1459'),  # Warehouse: 1.57
     }
     robot_name = LaunchConfiguration('robot_name')
     robot_sdf = LaunchConfiguration('robot_sdf')
