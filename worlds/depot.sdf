@@ -51,7 +51,8 @@
     </include>
     <!-- Wooden Pallet -->
     <include>
-      <uri>https://fuel.gazebosim.org/1.0/MovAi/models/pallet</uri>
+      <!-- <uri>https://fuel.gazebosim.org/1.0/MovAi/models/pallet</uri> -->
+      <uri>model://pallet</uri>
       <name>pallet_1</name>
       <static>true</static>
       <pose>-10 0 0.01 0 0 1.5708</pose> 
