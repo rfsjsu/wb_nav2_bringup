@@ -23,6 +23,14 @@
                         <size>0.1 0.1 0.1</size>
                     </box>
                 </geometry>
+                <surface>
+                    <friction>
+                    <ode>
+                        <mu>1.0</mu>
+                        <mu2>1.0</mu2>
+                    </ode>
+                    </friction>
+                </surface>
             </collision>
             <collision name="pallet_center_front_collision">
                 <pose>0.61 0 0.055 0 0 0</pose>
@@ -104,5 +112,13 @@
             </visual>
         </link>
         <static>0</static>
+        <include>
+            <pose>0.61 0 0.09 1.5708 0 1.5708</pose>
+            <uri>model://Apriltag36_11_00000</uri>
+        </include>
+        <joint name="apriltag_joint" type="fixed">
+            <child>Apriltag36_11_00000::link</child>
+            <parent>pallet_base</parent>
+        </joint>
     </model>
 </sdf>
