@@ -111,14 +111,50 @@
                 </geometry>
             </visual>
         </link>
-        <static>0</static>
+
+        <!-- Front Apriltag -->
         <include>
             <pose>0.61 0 0.09 1.5708 0 1.5708</pose>
             <uri>model://Apriltag36_11_00000</uri>
+            <name>Apriltag36_11_00000_front</name>
         </include>
-        <joint name="apriltag_joint" type="fixed">
-            <child>Apriltag36_11_00000::link</child>
+        <joint name="apriltag_front_joint" type="fixed">
+            <child>Apriltag36_11_00000_front::link</child>
             <parent>pallet_base</parent>
         </joint>
+
+        <!-- Back Apriltag -->
+        <include>
+            <pose>-0.59 0 0.09 1.5708 0 -1.5708</pose>
+            <uri>model://Apriltag36_11_00000</uri>
+            <name>Apriltag36_11_00000_back</name>
+        </include>
+        <joint name="apriltag_back_joint" type="fixed">
+            <child>Apriltag36_11_00000_back::link</child>
+            <parent>pallet_base</parent>
+        </joint>
+
+        <!-- Right Apriltag -->
+        <include>
+            <pose>0.01 0.4 0.09 1.5708 0 3.14159</pose>
+            <uri>model://Apriltag36_11_00000</uri>
+            <name>Apriltag36_11_00000_right</name>
+        </include>
+        <joint name="apriltag_right_joint" type="fixed">
+            <child>Apriltag36_11_00000_right::link</child>
+            <parent>pallet_base</parent>
+        </joint>
+
+        <!-- Left Apriltag -->
+        <include>
+            <pose>0.01 -0.4 0.09 1.5708 0 0</pose>
+            <uri>model://Apriltag36_11_00000</uri>
+            <name>Apriltag36_11_00000_left</name>
+        </include>
+        <joint name="apriltag_left_joint" type="fixed">
+            <child>Apriltag36_11_00000_left::link</child>
+            <parent>pallet_base</parent>
+        </joint>
+        <static>0</static>
     </model>
 </sdf>
