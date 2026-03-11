@@ -53,7 +53,7 @@
     <include>
       <uri>model://pallet</uri>
       <name>pallet_1</name>
-      <pose>-10 0 0.01 0 0 0</pose> 
+      <pose>-10 0 0.01 0 0 1.5708</pose> 
     </include>
   </world>
 </sdf>

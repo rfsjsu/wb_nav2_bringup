@@ -23,14 +23,6 @@
                         <size>0.1 0.1 0.1</size>
                     </box>
                 </geometry>
-                <surface>
-                    <friction>
-                    <ode>
-                        <mu>1.0</mu>
-                        <mu2>1.0</mu2>
-                    </ode>
-                    </friction>
-                </surface>
             </collision>
             <collision name="pallet_center_front_collision">
                 <pose>0.61 0 0.055 0 0 0</pose>
@@ -99,6 +91,56 @@
                         <size>0.1 0.1 0.1</size>
                     </box>
                 </geometry>
+            </collision>
+
+            <!-- Bottom skids -->
+            <collision name="pallet_center_collision">
+                <pose>0 0 0.01 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>1.22 0.1 0.01</size>
+                    </box>
+                </geometry>
+                <surface>
+                    <friction>
+                    <ode>
+                        <mu>1.0</mu>
+                        <mu2>1.0</mu2>
+                    </ode>
+                    </friction>
+                </surface>
+            </collision>
+            <collision name="pallet_left_collision">
+                <pose>0 -0.35 0.01 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>1.22 0.1 0.01</size>
+                    </box>
+                </geometry>
+                <surface>
+                    <friction>
+                    <ode>
+                        <mu>1.0</mu>
+                        <mu2>1.0</mu2>
+                    </ode>
+                    </friction>
+                </surface>
+            </collision>
+            <collision name="pallet_right_collision">
+                <pose>0 0.35 0.01 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>1.22 0.1 0.01</size>
+                    </box>
+                </geometry>
+                <surface>
+                    <friction>
+                    <ode>
+                        <mu>1.0</mu>
+                        <mu2>1.0</mu2>
+                    </ode>
+                    </friction>
+                </surface>
             </collision>
 
             <visual name="pallet_visual">
