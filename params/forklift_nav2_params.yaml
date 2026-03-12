@@ -140,8 +140,8 @@ controller_server:
       GoalAngleCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 3.0
-        threshold_to_consider: 0.5
+        cost_weight: 10.0 # 3.0
+        threshold_to_consider: 1.0 # 0.5
       PreferForwardCritic:
         enabled: true
         cost_power: 1
@@ -420,7 +420,7 @@ docking_server:
     dock_plugins: ['rosmaster_x3_dock']
     rosmaster_x3_dock:
       plugin: 'opennav_docking::SimpleNonChargingDock'
-      docking_threshold: 0.05
+      docking_threshold: 0.1 # 0.05
       staging_x_offset: 2.0
       staging_yaw_offset: 3.14
       use_external_detection_pose: true
