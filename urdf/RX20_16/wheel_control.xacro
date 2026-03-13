@@ -7,11 +7,11 @@
         filename="gz-sim-diff-drive-system"
         name="gz::sim::systems::DiffDrive">
         <wheel_separation>0.932</wheel_separation>
-        <wheel_radius>0.18</wheel_radius>
+        <wheel_radius>0.181</wheel_radius>
         <update_rate>30</update_rate>
         <left_joint>wheel_left_driving_joint</left_joint>
         <right_joint>wheel_right_driving_joint</right_joint>
-        <max_wheel_torque>200</max_wheel_torque>
+        <max_wheel_torque>10</max_wheel_torque>
         <!-- <max_wheel_acceleration>0.1</max_wheel_acceleration> -->
 
         <max_linear_acceleration>0.5</max_linear_acceleration>

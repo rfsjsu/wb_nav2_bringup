@@ -64,13 +64,18 @@ def generate_launch_description():
     headless = LaunchConfiguration('headless')
     world = LaunchConfiguration('world')
     bridge_config = LaunchConfiguration('bridge_config')
+
+    # Set the forklift starting pose in Gazebo.  Make sure to edit forklift_nav2_params.yaml
+    # so the AMCL initial pose matches or disable the initial pose in the yaml file and
+    # set the pose manually in RViz or publish the pose to /initial_pose.
+    #
     pose = {
-        'x': LaunchConfiguration('x_pose', default='-8.00'),  # Warehouse: 2.12
+        'x': LaunchConfiguration('x_pose', default='-2.00'),  # Warehouse: 2.12
         'y': LaunchConfiguration('y_pose', default='0.00'),  # Warehouse: -21.3
         'z': LaunchConfiguration('z_pose', default='0.15'),
         'R': LaunchConfiguration('roll', default='0'),
         'P': LaunchConfiguration('pitch', default='0'),
-        'Y': LaunchConfiguration('yaw', default='0'),  # Warehouse: 1.57
+        'Y': LaunchConfiguration('yaw', default='3.1459'),  # Warehouse: 1.57
     }
     robot_name = LaunchConfiguration('robot_name')
     robot_sdf = LaunchConfiguration('robot_sdf')
@@ -263,6 +268,12 @@ def generate_launch_description():
                           'roll': pose['R'],
                           'pitch': pose['P'],
                           'yaw': pose['Y']}.items())
+
+    apriltag_dock_pose_publisher = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(sim_dir, 'launch', 'apriltag_dock_pose_publisher.launch.py')),
+        launch_arguments={}
+    )
     
     # This dual laser code from:
     # https://github.com/pradyum/dual_laser_merger/blob/jazzy/README.md
@@ -371,6 +382,7 @@ def generate_launch_description():
     ld.add_action(bringup_cmd)
 
     ld.add_action(dual_laser_merger_node)
+    ld.add_action(apriltag_dock_pose_publisher)
 
     # ros control nodes for fork
     ld.add_action( delayed_controller_activation )

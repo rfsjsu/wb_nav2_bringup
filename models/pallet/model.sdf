@@ -1,0 +1,202 @@
+<?xml version='1.0'?>
+<sdf version="1.6">
+    <model name="pallet">
+        <pose frame="">0 0 0.07 0 0 0</pose>
+        <self_collide>false</self_collide>
+        <!-- BASE_LINK FRAME -->
+        <link name="pallet_base">
+            <pose frame="">0 0 0 0 0 0</pose>
+            <collision name="pallet_top_collision">
+                <pose>0 0 0.125 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>1.22 0.8 0.04</size>
+                    </box>
+                </geometry>
+            </collision>
+
+            <!-- Center supports, leave gaps for the fork -->
+            <collision name="pallet_center_middle_collision">
+                <pose>0 0 0.055 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.1 0.1 0.1</size>
+                    </box>
+                </geometry>
+            </collision>
+            <collision name="pallet_center_front_collision">
+                <pose>0.61 0 0.055 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.1 0.1 0.1</size>
+                    </box>
+                </geometry>
+            </collision>
+            <collision name="pallet_center_back_collision">
+                <pose>-0.61 0 0.055 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.1 0.1 0.1</size>
+                    </box>
+                </geometry>
+            </collision>
+
+            <!-- Left side supports -->
+            <collision name="pallet_left_middle_collision">
+                <pose>0 -0.35 0.055 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.1 0.1 0.1</size>
+                    </box>
+                </geometry>
+            </collision>
+            <collision name="pallet_left_front_collision">
+                <pose>0.61 -0.35 0.055 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.1 0.1 0.1</size>
+                    </box>
+                </geometry>
+            </collision>
+            <collision name="pallet_left_back_collision">
+                <pose>-0.61 -0.35 0.055 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.1 0.1 0.1</size>
+                    </box>
+                </geometry>
+            </collision>
+
+            <!-- Right side supports -->
+            <collision name="pallet_right_middle_collision">
+                <pose>0 0.35 0.055 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.1 0.1 0.1</size>
+                    </box>
+                </geometry>
+            </collision>
+            <collision name="pallet_right_front_collision">
+                <pose>0.61 0.35 0.055 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.1 0.1 0.1</size>
+                    </box>
+                </geometry>
+            </collision>
+            <collision name="pallet_right_back_collision">
+                <pose>-0.61 0.35 0.055 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.1 0.1 0.1</size>
+                    </box>
+                </geometry>
+            </collision>
+
+            <!-- Bottom skids -->
+            <collision name="pallet_center_collision">
+                <pose>0 0 0.01 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>1.22 0.1 0.01</size>
+                    </box>
+                </geometry>
+                <surface>
+                    <friction>
+                    <ode>
+                        <mu>1.0</mu>
+                        <mu2>1.0</mu2>
+                    </ode>
+                    </friction>
+                </surface>
+            </collision>
+            <collision name="pallet_left_collision">
+                <pose>0 -0.35 0.01 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>1.22 0.1 0.01</size>
+                    </box>
+                </geometry>
+                <surface>
+                    <friction>
+                    <ode>
+                        <mu>1.0</mu>
+                        <mu2>1.0</mu2>
+                    </ode>
+                    </friction>
+                </surface>
+            </collision>
+            <collision name="pallet_right_collision">
+                <pose>0 0.35 0.01 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>1.22 0.1 0.01</size>
+                    </box>
+                </geometry>
+                <surface>
+                    <friction>
+                    <ode>
+                        <mu>1.0</mu>
+                        <mu2>1.0</mu2>
+                    </ode>
+                    </friction>
+                </surface>
+            </collision>
+
+            <visual name="pallet_visual">
+                <pose frame="">0 0 0 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <scale>1 1 1</scale>
+                        <uri>https://fuel.gazebosim.org/1.0/movai/models/pallet/2/files/meshes/pallet.dae</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+
+        <!-- Front Apriltag -->
+        <include>
+            <pose>0.61 0 0.09 1.5708 0 1.5708</pose>
+            <uri>model://Apriltag36_11_00000</uri>
+            <name>Apriltag36_11_00000_front</name>
+        </include>
+        <joint name="apriltag_front_joint" type="fixed">
+            <child>Apriltag36_11_00000_front::link</child>
+            <parent>pallet_base</parent>
+        </joint>
+
+        <!-- Back Apriltag -->
+        <include>
+            <pose>-0.59 0 0.09 1.5708 0 -1.5708</pose>
+            <uri>model://Apriltag36_11_00000</uri>
+            <name>Apriltag36_11_00000_back</name>
+        </include>
+        <joint name="apriltag_back_joint" type="fixed">
+            <child>Apriltag36_11_00000_back::link</child>
+            <parent>pallet_base</parent>
+        </joint>
+
+        <!-- Right Apriltag -->
+        <include>
+            <pose>0.01 0.4 0.09 1.5708 0 3.14159</pose>
+            <uri>model://Apriltag36_11_00000</uri>
+            <name>Apriltag36_11_00000_right</name>
+        </include>
+        <joint name="apriltag_right_joint" type="fixed">
+            <child>Apriltag36_11_00000_right::link</child>
+            <parent>pallet_base</parent>
+        </joint>
+
+        <!-- Left Apriltag -->
+        <include>
+            <pose>0.01 -0.4 0.09 1.5708 0 0</pose>
+            <uri>model://Apriltag36_11_00000</uri>
+            <name>Apriltag36_11_00000_left</name>
+        </include>
+        <joint name="apriltag_left_joint" type="fixed">
+            <child>Apriltag36_11_00000_left::link</child>
+            <parent>pallet_base</parent>
+        </joint>
+        <static>0</static>
+    </model>
+</sdf>

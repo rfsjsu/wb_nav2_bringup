@@ -52,9 +52,9 @@
 			<mu2>1.0</mu2>
 			<!-- <kp>10000000.0</kp> -->
 			<kp>1000000000.0</kp>
-			<kd>1000.0</kd>
-			<minDepth>0.002</minDepth>
-			<maxVel>0</maxVel>		
+			<kd>10.0</kd>
+			<min_depth>0.01</min_depth>
+			<max_vel>1.0</max_vel>		
 		</gazebo>
 
  </xacro:macro>
