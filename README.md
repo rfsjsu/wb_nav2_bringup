@@ -98,14 +98,33 @@ CTRL-C to quit
 ```
 The fork can be raised and lowered with the `t` and `b` keys. The fork motion can be stopped at any point by pressing the `g` or `k` key.
 
+#### Docking With Apriltags
+To understand the Nav2 docking server and how to use Apriltag fiducial markers for localization, the best thing to do is to look at the Automatic Addison tutorials on the subject.
+
+https://automaticaddison.com/autonomous-docking-with-apriltags-using-nav2-ros-2-jazzy/
+
+https://www.youtube.com/watch?v=tFE75bP-ASo
+
+The implementation for the forklift borrowed heavily from the above tutorial.
+
+To run the basic docking example, run the `RX20_16.launch.sh` as described above.  If everything started correctly, in RViz you should see the depot map, the costmap, and the camera image facing the pallet in the distance.  In Gazebo you should see the forklift on one side of the open area and a pallet on the other end.
+
+Zoom into the pallet and you will see AprilTags on all four sides of the pallet.  The docking server uses these to help guide the forklift when it is close enough to see the tag with the camera.
+
+To dock, in RViz look for the docking panel.  In that panel, enter 'dock0' in the Dock id field and then click the 'Dock robot' button.  The robot will advance quickly to the staging pose about 2 meters from the pallet.  It will detected the AprilTag and move slowly to align to the AprilTab pose and dock with the pallet.  If the alignment is correct at about 10 cm distance from the AprilTag motion should stop and the docking state should will say "Reached".
+
+Navigation to the staging pose is not reliable and sometimes the forklift will not see the AprilTag and docking will abort.  Other times the approch if off angle the fork cannot insert into the pallet.  This means navigation needs refinement.
 
 ## To Do
 
-* Add fork control to the gamepad teleop.
-* Add apriltag docking code and pallet with apriltag.
+* Add fork control to the gamepad teleop. (not a priority)
+* Improve path planning to dock with a pallet so that the forklift approaches the pallet at an angle normal to the edge.
+* Add friction to the pallet so that it doesn't move with a glancing blow to the pallet.  Increase the pallet lift capacity so it can pick up a weighted pallet.
 
 ## History / Current State
 
 v0.1: RX20 16 forklift with differential drive.  World is a small warehouse.  LiDAR streams data and can be visualized in rviz2. Navigation and localization work.
 
 v0.2: RX20 16 forklift fork works and can pick up a pallet with manual control.
+
+v0.3: Nav2 docking server and Apriltag detection are implemented. Docking a pallet with an attached apriltag works for easy conditions.
