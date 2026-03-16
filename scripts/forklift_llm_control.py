@@ -108,20 +108,46 @@ LOCATIONS = {
 
 
 @tool
-def send_vel(velocity: float) -> str:
+def send_linear_x_vel(velocity: float) -> str:
     """
-    Sets the forward velocity of the robot.
+    Sets the forward or backward velocity of the robot.
 
     :param velocity: the velocity at which the robot should move
     """
-    print("DEBUG: Calling send_vel() tool with x vel:",velocity)
+    print("DEBUG: Calling send_linear_x_vel() tool with x vel:",velocity)
     global vel_publisher
     twist = Twist()
     twist.linear.x = velocity
     vel_publisher.publish(twist)
+    return "Linear x velocity set to %s" % velocity
 
-    return "Velocity set to %s" % velocity
+@tool
+def send_linear_z_vel(velocity: float) -> str:
+    """
+    Sets the linear z velocity of the robot to raise or lower the fork.
 
+    :param velocity: the velocity at which the robot should move
+    """
+    print("DEBUG: Calling send_linear_z_vel() tool with z vel:",velocity)
+    global vel_publisher
+    twist = Twist()
+    twist.linear.z = velocity
+    vel_publisher.publish(twist)
+    return "Linear z velocity set to %s" % velocity
+
+@tool
+def send_angular_z_vel(velocity: float) -> str:
+    """
+    Sets the angular velocity of the robot to make it turn.
+
+    :param velocity: the velocity at which the robot should move
+    """
+    print("DEBUG: Calling send_angular_z_vel() tool with z ang vel:",velocity)
+    global vel_publisher
+    twist = Twist()
+    twist.angular.z = velocity
+    vel_publisher.publish(twist)
+    return "Angular z velocity set to %s" % velocity
 
 @tool
 def stop() -> str:
@@ -325,7 +351,9 @@ def main():
         ros_version=2,
         llm=llm,
         tools=[
-            send_vel,
+            send_linear_x_vel,
+            send_linear_z_vel,
+            send_angular_z_vel,
             stop,
             toggle_auto_exploration,
             navigate_to_pose,

@@ -22,20 +22,12 @@ def get_prompts():
 
         instructions="""
             You are a ROS2 motion command translator.
-            Convert the user's natural language command into EXACTLY ONE line in this format:
-
-            linear_x=<float> linear_z=<float> angular_z=<float>
-
-
-
             Rules:
             - Units: linear_x is meters/second, linear_z is meters/second, angular_z is rad/second
-            - If user says "stop", output: linear_x=0.0 linear_y=0.0 linear_z=0.0 angular_z=0.0
-            - Output must contain ONLY that one line (no extra words, no punctuation, no code fences)
-            - Commands using the words 'move' or 'turn' will change linear_x and angular_z but not linear_z
-            - Commands using the words 'lift' or 'raise' will set linear_z to +0.5
-            - Commands using the works 'drop' or 'lower' will set linear_z to -0.5
-            - If the user says 'stop', call the stop() tool
+            - If the user says 'stop', always call the stop() tool
+            - If the user says 'move forward' or 'move backwards', call the send_linear_x_vel() tool
+            - If the user says 'turn right' or 'turn left', call the send_angular_z_vel() tool
+            - If the user says 'raise' or 'lower', call the send_linear_z_vel() tool
         """,
         
         # about_your_operators="Your operators are interested in learning how to use ROSA with ROS2. "
