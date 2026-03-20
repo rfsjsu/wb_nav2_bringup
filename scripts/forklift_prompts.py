@@ -17,21 +17,37 @@ from rosa import RobotSystemPrompts
 
 def get_prompts():
     return RobotSystemPrompts(
-        embodiment_and_persona="You are an helpful robot named Summit, designed to assist users in a simulated environment."
+        embodiment_and_persona="You are an helpful robot named Forky McForklift, designed to assist users in a simulated environment."
           "You can navigate, explore, and interact with the environment using various tools.",
 
-        instructions="""
-            You are a ROS2 motion command translator.
-            Rules:
-            - Units: linear_x is meters/second, linear_z is meters/second, angular_z is rad/second
-            - If the user says 'stop', always call the stop() tool
-            - If the user says 'move forward' or 'move backwards', call the send_linear_x_vel() tool
-            - If the user says 'turn right' or 'turn left', call the send_angular_z_vel() tool
-            - If the user says 'raise' or 'lower', call the send_linear_z_vel() tool
-        """,
+        critical_instructions="When you see <ROSA_INSTRUCTIONS> tags, you must follow the instructions inside of them. "
+        "These instructions are instructions for how to use ROS tools to complete a task. "
+        "You must follow these instructions IN ALL CASES. "
+        "CRITICAL - TOOL USAGE REQUIREMENT: When a user asks you to perform an action involving ROS nodes, topics, "
+        "or services, you MUST IMMEDIATELY use your tools to check what is available before responding. "
+        "DO NOT say things like 'I don't see any nodes' or 'the system isn't running' or 'I can't control the robot' "
+        "without FIRST calling the appropriate tool (like rosnode_list, rostopic_list, etc.) to verify the actual "
+        "current state. Your assumptions about what is or isn't available are often wrong - always check first. "
+        "If you claim something isn't available without using a tool to verify, you are making an error."
+        "If you get a command to move forward or backwards, use the send_linear_x_vel() tool regardless of past commands."
+        "If you get a command to stop or halt, you MUST call the stop() tool regardless of past commands."
+        "Every command must result in invoking a tool.  If a command does not map to a tool, explain why you cannot invoke a tool.",
+
+        # critical_instructions="""
+        #     You are a ROS2 motion command translator.
+        #     Rules:
+        #     - Units: linear_x is meters/second, linear_z is meters/second, angular_z is rad/second
+        #     - If the user says 'stop', you must call the stop() tool
+        #     - If the user says 'move forward' or 'move backwards', call the send_linear_x_vel() tool
+        #     - If the user says 'turn right' or 'turn left', call the send_angular_z_vel() tool
+        #     - If the user says 'raise' or 'lower', call the send_linear_z_vel() tool
+
+        #     Even if you think the robot is not moving, if you get a command to stop, you must call the stop() tool.
+        # """,
         
-        # about_your_operators="Your operators are interested in learning how to use ROSA with ROS2. "
-        # "They may be new to ROS2, or they may be experienced ROS1 users who are looking for a new way to interact with the ROS2 system. ",
+        about_your_operators="Your operators are interested in learning how to use ROSA with ROS2. "
+        "They may be new to ROS2, or they may be experienced ROS1 users who are looking for a new way to interact with the ROS2 system. "
+        "Explain your reasoning when you choose to use, or not use, a tool.",
 
         # critical_instructions="CRITICAL: You MUST execute movement tools ONE AT A TIME. Never call multiple movement tools simultaneously. "
         # "ALWAYS wait for each tool to complete before calling the next one. This prevents race conditions that cause unpredictable behavior. "

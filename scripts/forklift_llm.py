@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_ollama import ChatOllama
 
-llm_vendor = "Anthropic"
+llm_vendor = "Ollama"
 
 def get_llm(streaming: bool = False):
     """A helper function to get the LLM instance."""
@@ -20,8 +20,8 @@ def get_llm(streaming: bool = False):
         if llm_vendor == "Ollama":
             print("Using local Ollama")
             llm = ChatOllama(
-                model="llama3.2",
-                temperature=0.95,
+                model="qwen3.5:4b",
+                temperature=0.0,
                 base_url="http://localhost:11434",  # Can be changed for remote Ollama instances
             )
         elif(llm_vendor == "Anthropic"):

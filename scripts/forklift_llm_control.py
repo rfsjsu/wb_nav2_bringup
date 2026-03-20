@@ -2,14 +2,14 @@ from langchain_anthropic import ChatAnthropic
 from langchain_ollama import ChatOllama
 from langchain.agents import tool
 from rosa import ROSA
-from rosa.prompts import RobotSystemPrompts
+from rosa.prompts import RobotSystemPrompts, system_prompts
 import os
 import pathlib
 import time
 import subprocess
 from typing import Tuple
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, String
 from nav2_msgs.action import NavigateToPose
 import rclpy
 from rclpy.action import ActionClient
@@ -21,6 +21,7 @@ from forklift_prompts import get_prompts
 
 node = None
 vel_publisher = None
+vel_subscriber = None
 explore_publisher = None
 navigate_to_pose_action_client = None
 
@@ -106,11 +107,21 @@ LOCATIONS = {
     },
 }
 
+@tool
+def get_velocity() -> str:
+    """
+    Gets the linear and angular velocity of the robot.
+
+    """
+    print("DEBUG: Calling get_velocity()")
+    return ""
 
 @tool
 def send_linear_x_vel(velocity: float) -> str:
     """
     Sets the forward or backward velocity of the robot.
+    A positive velocity will move the forklift forward.
+    A negative velocity will move the forklift backwards.
 
     :param velocity: the velocity at which the robot should move
     """
@@ -125,6 +136,8 @@ def send_linear_x_vel(velocity: float) -> str:
 def send_linear_z_vel(velocity: float) -> str:
     """
     Sets the linear z velocity of the robot to raise or lower the fork.
+    A positive velocity will move the fork up.
+    A negative velocity will move the fork down.
 
     :param velocity: the velocity at which the robot should move
     """
@@ -139,6 +152,8 @@ def send_linear_z_vel(velocity: float) -> str:
 def send_angular_z_vel(velocity: float) -> str:
     """
     Sets the angular velocity of the robot to make it turn.
+    A positive angular velocity will turn the forklift right.
+    A negative angular velocity will turn the forklift left.
 
     :param velocity: the velocity at which the robot should move
     """
@@ -152,7 +167,7 @@ def send_angular_z_vel(velocity: float) -> str:
 @tool
 def stop() -> str:
     """
-    Stops or halts the robot by setting its velocity to zero
+    Stops or halts the robot by setting its linear and angular velocities to zero.
 
     """
     print("DEBUG: Calling stop() tool")
@@ -192,6 +207,7 @@ def navigate_to_pose(
     :param z_orientation: The z component of the target orientation (quaternion).
     :param w_orientation: The w component of the target orientation (quaternion).
     """
+    print("DEBUG: Calling navigate_to_pose().")
     global navigate_to_pose_action_client, node
 
     goal_msg = NavigateToPose.Goal()
@@ -224,6 +240,7 @@ def navigate_relative(
     :param z_orientation: The z component of the target orientation (quaternion) relative to the robot.
     :param w_orientation: The w component of the target orientation (quaternion) relative to the robot.
     """
+    print("DEBUG: Calling navigate_relative().")
     global navigate_to_pose_action_client, node
 
     goal_msg = NavigateToPose.Goal()
@@ -325,6 +342,41 @@ def navigate_to_location_by_name(location_name: str) -> str:
     navigate_to_pose_action_client.send_goal_async(goal_msg)
     return f"Navigation goal sent to location '{location_name}'. Position: {pos}, Orientation: {orient}."
 
+class VelocitySubscriber(rclpy.node.Node):
+
+    def __init__(self):
+        super().__init__('velocity_subscriber')
+        self.subscription = self.create_subscription(
+            Twist,
+            'topic',
+            self.listener_callback,
+            10)
+        self.subscription  # prevent unused variable warning
+
+    def listener_callback(self, msg):
+        self.get_logger().info('I heard: "%s"' % msg.data)
+
+class OdomSubscriber(rclpy.node.Node):
+    def __init__(self):
+        super().__init__('odom_subscriber')
+        # Create subscription
+        self.subscription = self.create_subscription(
+            Twist,
+            '/odom',  # Often /diff_drive_controller/odom or /odom
+            self.odom_callback,
+            10)
+        self.subscription  # prevent unused variable warning
+        self.linear_x = 0
+        self.angular_z = 0
+
+    def odom_callback(self, msg):
+        # Extract linear velocity (x)
+        self.linear_x = msg.twist.twist.linear.x
+        # Extract angular velocity (z)
+        self.angular_z = msg.twist.twist.angular.z
+        
+        self.get_logger().info(
+            f'Linear: {self.linear_x:.2f} m/s, Angular: {self.angular_z:.2f} rad/s')
 
 def main():
     global node, vel_publisher, explore_publisher, navigate_to_pose_action_client
@@ -336,6 +388,7 @@ def main():
     node = rclpy.create_node("rosa_forklift_node", parameter_overrides=[sim_time_param])
 
     vel_publisher = node.create_publisher(Twist, "/cmd_vel", 10)
+    vel_subscriber = OdomSubscriber()
     explore_publisher = node.create_publisher(Bool, "/explore/resume", 10)
     navigate_to_pose_action_client = ActionClient(
         node, NavigateToPose, "/navigate_to_pose"
@@ -344,7 +397,13 @@ def main():
     llm = get_llm()
     
     prompt = RobotSystemPrompts()
+    print("Prompt from RobotSystemPrompts(): ", prompt) # DEBUG
+    print("Prompt from RobotSystemPrompts().as_message(): ", prompt.as_message()) # DEBUG
+    print("ROSA system_prompts:", system_prompts)
     prompt.embodiment = "You are an helpful robot named Summit, designed to assist users in a simulated environment. You can navigate, explore, and interact with the environment using various tools."
+ 
+    prompt = get_prompts()
+    print("Prompt from get_prompts(): ", prompt) # DEBUG
 
     # Pass the LLM to ROSA with both tools available
     agent = ROSA(
@@ -364,19 +423,23 @@ def main():
             navigate_to_location_by_name,
         ],
         prompts=prompt,
+        verbose=False,
     )
 
+    # rclpy.spin(vel_subscriber)
     print("Type 'exit' or 'quit' to end the program")
 
     try:
         while True:
-            msg = input("Enter your request: ")
+            msg = input("\nEnter your request: ")
             if msg.lower() in ["exit", "quit"]:
                 break
 
             try:
                 print("Request sent")
-                res = agent.invoke(msg)[0]   # Need [0] if Claude, leave out if Ollama
+                res = agent.invoke(msg)
+                if(isinstance(res, list)):
+                    res = res[0]   # Need [0] if Claude, leave out if Ollama
                 if isinstance(res, dict) and "text" in res:
                     print(res["text"])
                 else:
@@ -386,8 +449,8 @@ def main():
     except KeyboardInterrupt:
         print("\nProgram terminated by user")
 
-    agent.shutdown()
-    print("Bye from rosa_summit.")
+    # agent.shutdown()
+    print("Forklift LLM shutting down.")
 
 if __name__ == "__main__":
     main()
