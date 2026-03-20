@@ -10,8 +10,9 @@ import subprocess
 from typing import Tuple
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool, String
-from nav2_msgs.action import NavigateToPose
+from nav2_msgs.action import NavigateToPose, DockRobot
 import rclpy
+from rclpy.duration import Duration
 from rclpy.action import ActionClient
 from rclpy.parameter import Parameter
 
@@ -24,6 +25,7 @@ vel_publisher = None
 vel_subscriber = None
 explore_publisher = None
 navigate_to_pose_action_client = None
+dock_action_client = None
 
 
 def execute_ros_command(command: str) -> Tuple[bool, str]:
@@ -221,6 +223,28 @@ def navigate_to_pose(
     navigate_to_pose_action_client.send_goal_async(goal_msg)
     return f"Navigation goal sent to x: {x}, y: {y}, orientation_z: {z_orientation}, orientation_w: {w_orientation}."
 
+@tool
+def dock_to_pallet(
+    dock_id: str
+) -> str:
+    """
+    Dock with a pallet.
+
+    :param dock_id: The dock id used by the docking server to identify the pallet.
+    """
+    print("DEBUG: Calling dock_to pallet() with dock_id:",dock_id)
+    global dock_action_client, node
+
+    goal_msg = DockRobot.Goal()
+    goal_msg.dock_pose.header.frame_id = "map"
+    goal_msg.dock_pose.header.stamp = node.get_clock().now().to_msg()
+    goal_msg.use_dock_id = True
+    goal_msg.dock_id = dock_id
+    goal_msg.max_staging_time = 120.0
+    goal_msg.navigate_to_staging_pose = True
+
+    dock_action_client.send_goal_async(goal_msg)
+    return f"Dock goal sent to dock: {dock_id}."
 
 @tool
 def navigate_relative(
@@ -379,7 +403,8 @@ class OdomSubscriber(rclpy.node.Node):
             f'Linear: {self.linear_x:.2f} m/s, Angular: {self.angular_z:.2f} rad/s')
 
 def main():
-    global node, vel_publisher, explore_publisher, navigate_to_pose_action_client
+    global node, vel_publisher, explore_publisher
+    global navigate_to_pose_action_client, dock_action_client
     print("Hi from rosa_forklift.")
 
     # init rclpy
@@ -390,20 +415,22 @@ def main():
     vel_publisher = node.create_publisher(Twist, "/cmd_vel", 10)
     vel_subscriber = OdomSubscriber()
     explore_publisher = node.create_publisher(Bool, "/explore/resume", 10)
-    navigate_to_pose_action_client = ActionClient(
-        node, NavigateToPose, "/navigate_to_pose"
-    )
+    navigate_to_pose_action_client = ActionClient( node, NavigateToPose, "/navigate_to_pose")
+    dock_action_client = ActionClient(node, DockRobot, "/dock_robot")
+
+    print("navigate_action_client: ",navigate_to_pose_action_client)
+    print("dock_action_client: ", dock_action_client)
 
     llm = get_llm()
     
     prompt = RobotSystemPrompts()
-    print("Prompt from RobotSystemPrompts(): ", prompt) # DEBUG
-    print("Prompt from RobotSystemPrompts().as_message(): ", prompt.as_message()) # DEBUG
-    print("ROSA system_prompts:", system_prompts)
+    # print("Prompt from RobotSystemPrompts(): ", prompt) # DEBUG
+    # print("Prompt from RobotSystemPrompts().as_message(): ", prompt.as_message()) # DEBUG
+    # print("ROSA system_prompts:", system_prompts)
     prompt.embodiment = "You are an helpful robot named Summit, designed to assist users in a simulated environment. You can navigate, explore, and interact with the environment using various tools."
  
     prompt = get_prompts()
-    print("Prompt from get_prompts(): ", prompt) # DEBUG
+    # print("Prompt from get_prompts(): ", prompt) # DEBUG
 
     # Pass the LLM to ROSA with both tools available
     agent = ROSA(
@@ -421,6 +448,7 @@ def main():
             list_saved_maps,
             get_location_names,
             navigate_to_location_by_name,
+            dock_to_pallet,
         ],
         prompts=prompt,
         verbose=False,
