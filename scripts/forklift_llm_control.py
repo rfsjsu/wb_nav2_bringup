@@ -60,51 +60,15 @@ def _get_maps_dir() -> str:
     return maps_dir
 
 
-# Hardcoded locations
+# Hardcoded locations on the map
 LOCATIONS = {
-    "gym": {
-        "position": {"x": 1.9517535073729964, "y": 4.359393291484201, "z": 0.0},
+    "home": {
+        "position": {"x": -2.0, "y": 0.0, "z": 0.0},
         "orientation": {
-            "x": 1.6302566310137402e-08,
-            "y": 2.9703213238180324e-08,
-            "z": -0.07945176214102775,
-            "w": 0.9968387118750377,
-        },
-    },
-    "kitchen": {
-        "position": {"x": 7.353217566768062, "y": -3.458078519447155, "z": 0.0},
-        "orientation": {
-            "x": 1.611930208234276e-08,
-            "y": 2.980589390984495e-08,
-            "z": -0.07325043342926793,
-            "w": 0.997313578571165,
-        },
-    },
-    "living room": {
-        "position": {"x": 1.084137940689, "y": -0.383112079564818, "z": 0.0},
-        "orientation": {
-            "x": 3.316520260505064e-08,
-            "y": 6.931688679143018e-09,
-            "z": -0.8089064668855616,
-            "w": 0.5879373502599718,
-        },
-    },
-    "office": {
-        "position": {"x": -4.9521764504716765, "y": -3.573205806403106, "z": 0.0},
-        "orientation": {
-            "x": -3.238093524948138e-08,
-            "y": 9.961584542476143e-09,
-            "z": 0.9923116132365216,
-            "w": -0.1237645435329962,
-        },
-    },
-    "bedroom": {
-        "position": {"x": -4.002267652240865, "y": -0.060121871401907084, "z": 0.0},
-        "orientation": {
-            "x": -2.1636165143756515e-08,
-            "y": 2.6069771799291994e-08,
-            "z": 0.8980250477792399,
-            "w": 0.43994433007039957,
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.0,
         },
     },
 }
@@ -366,46 +330,10 @@ def navigate_to_location_by_name(location_name: str) -> str:
     navigate_to_pose_action_client.send_goal_async(goal_msg)
     return f"Navigation goal sent to location '{location_name}'. Position: {pos}, Orientation: {orient}."
 
-class VelocitySubscriber(rclpy.node.Node):
-
-    def __init__(self):
-        super().__init__('velocity_subscriber')
-        self.subscription = self.create_subscription(
-            Twist,
-            'topic',
-            self.listener_callback,
-            10)
-        self.subscription  # prevent unused variable warning
-
-    def listener_callback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.data)
-
-class OdomSubscriber(rclpy.node.Node):
-    def __init__(self):
-        super().__init__('odom_subscriber')
-        # Create subscription
-        self.subscription = self.create_subscription(
-            Twist,
-            '/odom',  # Often /diff_drive_controller/odom or /odom
-            self.odom_callback,
-            10)
-        self.subscription  # prevent unused variable warning
-        self.linear_x = 0
-        self.angular_z = 0
-
-    def odom_callback(self, msg):
-        # Extract linear velocity (x)
-        self.linear_x = msg.twist.twist.linear.x
-        # Extract angular velocity (z)
-        self.angular_z = msg.twist.twist.angular.z
-        
-        self.get_logger().info(
-            f'Linear: {self.linear_x:.2f} m/s, Angular: {self.angular_z:.2f} rad/s')
-
 def main():
     global node, vel_publisher, explore_publisher
     global navigate_to_pose_action_client, dock_action_client
-    print("Hi from rosa_forklift.")
+    print("Hi from ROSA forklift.")
 
     # init rclpy
     rclpy.init()
@@ -413,24 +341,12 @@ def main():
     node = rclpy.create_node("rosa_forklift_node", parameter_overrides=[sim_time_param])
 
     vel_publisher = node.create_publisher(Twist, "/cmd_vel", 10)
-    vel_subscriber = OdomSubscriber()
     explore_publisher = node.create_publisher(Bool, "/explore/resume", 10)
     navigate_to_pose_action_client = ActionClient( node, NavigateToPose, "/navigate_to_pose")
     dock_action_client = ActionClient(node, DockRobot, "/dock_robot")
 
-    print("navigate_action_client: ",navigate_to_pose_action_client)
-    print("dock_action_client: ", dock_action_client)
-
     llm = get_llm()
-    
-    prompt = RobotSystemPrompts()
-    # print("Prompt from RobotSystemPrompts(): ", prompt) # DEBUG
-    # print("Prompt from RobotSystemPrompts().as_message(): ", prompt.as_message()) # DEBUG
-    # print("ROSA system_prompts:", system_prompts)
-    prompt.embodiment = "You are an helpful robot named Summit, designed to assist users in a simulated environment. You can navigate, explore, and interact with the environment using various tools."
- 
     prompt = get_prompts()
-    # print("Prompt from get_prompts(): ", prompt) # DEBUG
 
     # Pass the LLM to ROSA with both tools available
     agent = ROSA(
@@ -454,7 +370,6 @@ def main():
         verbose=False,
     )
 
-    # rclpy.spin(vel_subscriber)
     print("Type 'exit' or 'quit' to end the program")
 
     try:
