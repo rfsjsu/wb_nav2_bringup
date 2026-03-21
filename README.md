@@ -52,7 +52,7 @@ ros2 launch wb_nav2_bringup tb3_simulation_launch.py headless:=False
 
 ### Topic Specific Documentation
 ---
-#### Raising And Lowering The Forklift Fork
+#### <u>Raising And Lowering The Forklift Fork</u>
 
 The fork is mounted to the forklift body through a prismatic joint and is controlled with `ros2_control`.
 
@@ -98,7 +98,8 @@ CTRL-C to quit
 ```
 The fork can be raised and lowered with the `t` and `b` keys. The fork motion can be stopped at any point by pressing the `g` or `k` key.
 
-#### Docking With Apriltags
+#### <u>Docking With Apriltags</u>
+
 To understand the Nav2 docking server and how to use Apriltag fiducial markers for localization, the best thing to do is to look at the Automatic Addison tutorials on the subject.
 
 https://automaticaddison.com/autonomous-docking-with-apriltags-using-nav2-ros-2-jazzy/
@@ -115,11 +116,36 @@ To dock, in RViz look for the docking panel.  In that panel, enter 'dock0' in th
 
 Navigation to the staging pose is not reliable and sometimes the forklift will not see the AprilTag and docking will abort.  Other times the approch if off angle the fork cannot insert into the pallet.  This means navigation needs refinement.
 
+#### <u>LLM with ROSA</u>
+
+ROSA is framework that interfaces Langchain with ROS2.  In this code we have added ROSA so that you can use natural language commands to direct the forklift.  The current implementation uses a local LLM to reduce API latency and to save costs on development.
+
+To install and use the local LLM you first need to get and install Ollama from https://ollama.com.
+
+The model we use is `qwen3.5:4b` which is small enough to fit on mid-range GPUs but still performs well in chat, tool invocation, reasoning, and image processing for our narrow scope.
+
+To download the model just run `ollama run qwen3.5:4b` in a terminal. This will download the model and start a chat session so you can try out the model.  You only need to do this once to get the model.  You can close this terminal after the model has been installed.
+
+If you want to run a remote LLM like Claude or ChatGPT, you will need to edit `forklift_llm.py`.  There you will see an example of how to pick the service and set up your authentication.
+
+To use ROSA with the forklift, first start the forklift code with the `RX20_16.launch.sh` shell script.  Then in a second terminal run in your ROS2 workspace `python ./install/wb_nav2_bringup/share/wb_nav2_bringup/scripts/forklift_llm_control.py`.  This will start a chat session with the forklift.
+
+Commands that are known to work are
+
+* Move forward
+* Move backwards
+* Turn right
+* Turn left
+* Stop
+* Navigate to (x/y coordinates on the map)
+* Dock to (dock name)
+
 ## To Do
 
 * Add fork control to the gamepad teleop. (not a priority)
 * Improve path planning to dock with a pallet so that the forklift approaches the pallet at an angle normal to the edge.
 * Add friction to the pallet so that it doesn't move with a glancing blow to the pallet.  Increase the pallet lift capacity so it can pick up a weighted pallet.
+* Expand the LLM code to handle high level commands that require a sequence of actions.
 
 ## History / Current State
 
@@ -128,3 +154,5 @@ v0.1: RX20 16 forklift with differential drive.  World is a small warehouse.  Li
 v0.2: RX20 16 forklift fork works and can pick up a pallet with manual control.
 
 v0.3: Nav2 docking server and Apriltag detection are implemented. Docking a pallet with an attached apriltag works for easy conditions.
+
+v0.4: Basic ROSA LLM is functional.

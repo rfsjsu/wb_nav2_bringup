@@ -49,11 +49,39 @@
       </experimental:params>
 
     </include>
-    <!-- Wooden Pallet -->
+    <!-- Wooden Pallet, bottom wall -->
     <include>
       <uri>model://pallet</uri>
       <name>pallet_1</name>
-      <pose>-10 0 0.01 0 0 1.5708</pose> 
+      <pose>-10 -6 0.01 0 0 0</pose> 
+    </include>
+
+    <!-- Wooden Pallet, lower back wall -->
+    <include>
+      <uri>model://pallet</uri>
+      <name>pallet_2</name>
+      <pose>-14 -3 0.01 0 0 1.5708</pose> 
+    </include>
+
+    <!-- Wooden Pallet, middle back wall -->
+    <include>
+      <uri>model://pallet</uri>
+      <name>pallet_3</name>
+      <pose>-14 0 0.01 0 0 1.5708</pose> 
+    </include>
+
+    <!-- Wooden Pallet, upper back wall -->
+    <include>
+      <uri>model://pallet</uri>
+      <name>pallet_4</name>
+      <pose>-14 3 0.01 0 0 1.5708</pose> 
+    </include>
+
+    <!-- Wooden Pallet, upper wall -->
+    <include>
+      <uri>model://pallet</uri>
+      <name>pallet_5</name>
+      <pose>-10 6 0.01 0 0 0</pose> 
     </include>
   </world>
 </sdf>
