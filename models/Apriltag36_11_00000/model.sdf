@@ -45,9 +45,6 @@
             <uri>model://Apriltag36_11_00000/meshes/tag36_11_00000.dae</uri>
           </mesh>
         </geometry>
-        <plugin filename="gz-sim-label-system" name="gz::sim::systems::Label">
-          <label>10</label>
-        </plugin>
       </visual>
     </link>
   </model>
