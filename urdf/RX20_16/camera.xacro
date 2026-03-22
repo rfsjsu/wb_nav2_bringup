@@ -55,6 +55,9 @@
           <far>100</far>
         </clip>
         <optical_frame_id>${name}_camera_link_optical</optical_frame_id>
+        <save enabled="true">
+          <path>DATASET_PATH</path>
+        </save>
       </camera>
       <update_rate>10</update_rate>
       <visualize>true</visualize>
