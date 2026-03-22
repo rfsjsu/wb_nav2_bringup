@@ -74,13 +74,15 @@ LOCATIONS = {
 }
 
 @tool
-def execute_mission(mission_number: int) -> str:
+def execute_mission(mission_number: int, pallet: str = "P1", destination: str = "D2") -> str:
     """
     Executes a predefined mission by its number.
     Mission 1: Bring robot back to home (S zone).
-    Mission 2: Move pallet P1 to destination D2.
+    Mission 2: Move pallet from pickup zone to destination zone.
 
     :param mission_number: The mission number to execute (e.g. 1, 2, 3)
+    :param pallet: The pallet to pick up (e.g. P1, P2, P3, P4, P5). Used for mission 2.
+    :param destination: The destination to deliver the pallet (e.g. D1, D2, D3). Used for mission 2.
     """
     import subprocess
     import os
@@ -90,7 +92,10 @@ def execute_mission(mission_number: int) -> str:
     )
     if not os.path.exists(mission_path):
         return f"Mission {mission_number} not found at {mission_path}"
-    subprocess.run(["python3", mission_path])
+    if mission_number == 2:
+        subprocess.run(["python3", mission_path, pallet, destination])
+    else:
+        subprocess.run(["python3", mission_path])
     return f"Mission {mission_number} complete!"
 
 

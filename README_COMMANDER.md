@@ -42,7 +42,7 @@ See `configs/dock_database.yaml` for all available dock ids (`dock1` ~ `dock5`).
 
 ## World Markers
 
-The following visual markers have been added to `worlds/depot.sdf`.
+The following visual markers have been added to `worlds/mission_depot_v1.sdf`.
 
 | Label | Type | Coordinates (x, y) | Description |
 |-------|------|---------------------|-------------|
@@ -72,17 +72,61 @@ Shared library used by all missions.
 | `go_to_destination(dest_name)` | Navigate to D1, D2, or D3 |
 | `dock(pallet_name)` | Dock to P1~P5 using AprilTag docking server |
 | `backup(distance, speed)` | Back up after docking |
-| `raise_fork(duration)` | Raise the fork via cmd_vel |
-| `lower_fork(duration)` | Lower the fork via cmd_vel |
+| `raise_fork(duration)` | Raise the fork via velocity_control |
+| `lower_fork(duration)` | Lower the fork via velocity_control |
 | `wait_until_in_zone(cx, cy, radius)` | Wait until robot enters a zone, then cancel task |
 | `shutdown()` | Shutdown ROS2 node |
 
 ### Running a Mission
 
+#### Mission 1: Bring robot to home (UC-01)
+
 ```
 cd ~/ros2_ws
 source install/setup.bash
 python3 src/wb_nav2_bringup/scripts/missions/mission_1.py
+```
+
+The robot will navigate from its current position back to the home zone (S).
+
+#### Mission 2: Move a pallet to a destination (UC-02)
+
+Mission 2 moves a pallet from a pickup zone to a drop-off zone in 7 steps:
+1. Dock to pallet using AprilTag detection
+2. Raise fork
+3. Navigate to destination
+4. Lower fork
+5. Back up (disengage from pallet)
+6. Return home
+
+```
+cd ~/ros2_ws
+source install/setup.bash
+python3 src/wb_nav2_bringup/scripts/missions/mission_2.py <pallet> <destination>
+```
+
+| Argument | Options | Description |
+|----------|---------|-------------|
+| pallet | P1, P2, P3, P4, P5 | Pallet pickup zone |
+| destination | D1, D2, D3 | Pallet drop-off zone |
+
+Example:
+```
+python3 src/wb_nav2_bringup/scripts/missions/mission_2.py P1 D2
+```
+
+#### Running missions via LLM (ROSA)
+
+First start the simulation, then in a second terminal start the LLM control session:
+```
+cd ~/ros2_ws
+python3 ./install/wb_nav2_bringup/share/wb_nav2_bringup/scripts/forklift_llm_control.py
+```
+
+Then type natural language commands:
+```
+Execute mission 2 P1 D2
+Execute mission 2 P2 D3
 ```
 
 ---
@@ -92,21 +136,15 @@ python3 src/wb_nav2_bringup/scripts/missions/mission_1.py
 | UC # | Title | Code File | Status |
 |------|-------|-----------|--------|
 | UC-01 | Bring robot to home | `missions/mission_1.py` | Done |
-| UC-02 | Move Pallet P1 to D2 | `missions/mission_2.py` | In Progress |
+| UC-02 | Move pallet to destination | `missions/mission_2.py` | Done |
 
 ---
 
 ## LLM Mission Control
 
-The `execute_mission` tool has been added to `scripts/forklift_llm_control.py`.
-This allows the LLM to run missions via natural language commands.
+The `execute_mission` tool in `scripts/forklift_llm_control.py` allows the LLM to run missions via natural language commands.
 
 Example commands:
 - "Run mission 1"
-- "Execute mission 1"
-- "Go home"
-
-To start the LLM control session:
-```
-python3 ./install/wb_nav2_bringup/share/wb_nav2_bringup/scripts/forklift_llm_control.py
-```
+- "Execute mission 2 P1 D2"
+- "Execute mission 2 P2 D3"

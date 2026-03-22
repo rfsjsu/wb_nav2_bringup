@@ -4,10 +4,12 @@ import rclpy
 from rclpy.parameter import Parameter
 from rclpy.duration import Duration
 from geometry_msgs.msg import Twist, PoseStamped
+from std_msgs.msg import Float64MultiArray
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 
 node = None
 vel_publisher = None
+fork_publisher = None
 navigator = None
 
 # Known locations on the map
@@ -24,6 +26,19 @@ PALLETS = {
     'P5': 'dock5',
 }
 
+# Staging positions per pallet (2m in front of dock face, facing the dock)
+# dock yaw -> approach direction -> robot quaternion
+# dock1: yaw=+90deg (+Y) -> approach from -Y -> robot faces +Y: oz=0.7071, ow=0.7071
+# dock2,3,4: yaw=0deg (+X) -> approach from -X -> robot faces +X: oz=0.0, ow=1.0
+# dock5: yaw=-90deg (-Y) -> approach from +Y -> robot faces -Y: oz=-0.7071, ow=0.7071
+DOCK_STAGING = {
+    'P1': {'x': -10.0, 'y': -5.0, 'oz': -0.7071, 'ow': 0.7071},
+    'P2': {'x': -12.0, 'y': -3.0, 'oz': 0.0,    'ow': 1.0},
+    'P3': {'x': -12.0, 'y':  0.0, 'oz': 0.0,    'ow': 1.0},
+    'P4': {'x': -12.0, 'y':  3.0, 'oz': 0.0,    'ow': 1.0},
+    'P5': {'x': -10.0, 'y':  8.0, 'oz': -0.7071, 'ow': 0.7071},
+}
+
 # Drop-off destinations
 DESTINATIONS = {
     'D1': {'x': -7.0, 'y':  0.0},
@@ -32,11 +47,12 @@ DESTINATIONS = {
 }
 
 def init():
-    global node, vel_publisher, navigator
+    global node, vel_publisher, fork_publisher, navigator
     rclpy.init()
     sim_time_param = Parameter("use_sim_time", rclpy.Parameter.Type.BOOL, True)
     node = rclpy.create_node("pallet_mission_node", parameter_overrides=[sim_time_param])
     vel_publisher = node.create_publisher(Twist, "/cmd_vel", 10)
+    fork_publisher = node.create_publisher(Float64MultiArray, "/velocity_control/commands", 10)
     navigator = BasicNavigator()
     print("Waiting for Nav2...")
     time.sleep(10)
@@ -86,29 +102,30 @@ def wait_until_in_zone(cx, cy, radius=1.5, timeout=120.0):
 
 def raise_fork(duration=4.0):
     print("Raising fork...")
-    twist = Twist()
-    twist.linear.z = 1.0
-    vel_publisher.publish(twist)
+    msg = Float64MultiArray()
+    msg.data = [1.0]
+    fork_publisher.publish(msg)
     time.sleep(duration)
-    twist.linear.z = 0.0
-    vel_publisher.publish(twist)
+    msg.data = [0.0]
+    fork_publisher.publish(msg)
     print("Fork raised!")
 
 def lower_fork(duration=5.0):
     print("Lowering fork...")
-    twist = Twist()
-    twist.linear.z = -1.0
-    vel_publisher.publish(twist)
+    msg = Float64MultiArray()
+    msg.data = [-1.0]
+    fork_publisher.publish(msg)
     time.sleep(duration)
-    twist.linear.z = 0.0
-    vel_publisher.publish(twist)
+    msg.data = [0.0]
+    fork_publisher.publish(msg)
     print("Fork lowered!")
 
 def dock(pallet_name):
     dock_id = PALLETS[pallet_name]
     print(f"Docking to {pallet_name} ({dock_id})...")
     navigator.dockRobotByID(dock_id)
-    wait_for_task()
+    time.sleep(1.0)  # wait for Nav2 to register the docking task
+    wait_for_task(timeout=120.0)
     print(f"Docking complete!")
 
 def backup(distance=0.5, speed=0.5):
@@ -127,6 +144,7 @@ def go_to(x, y, oz=0.0, ow=1.0):
     goal.pose.orientation.z = oz
     goal.pose.orientation.w = ow
     navigator.goToPose(goal)
+    time.sleep(1.0)  # wait for Nav2 to register the new task
     wait_for_task()
     print(f"Arrived at ({x}, {y})!")
 
@@ -141,7 +159,8 @@ def go_home():
     goal.pose.orientation.z = loc['z']
     goal.pose.orientation.w = loc['w']
     navigator.goToPose(goal)
-    wait_until_in_zone(loc['x'], loc['y'], radius=1.5)
+    time.sleep(1.0)
+    wait_for_task(timeout=120.0)
     print("Home!")
 
 def go_to_destination(dest_name):
