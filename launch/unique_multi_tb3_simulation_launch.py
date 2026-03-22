@@ -135,7 +135,7 @@ def generate_launch_description():
     )
 
     # Start Gazebo with plugin providing the robot spawning service
-    world_sdf = tempfile.mktemp(prefix='nav2_', suffix='.sdf')
+    world_sdf = tempfile.mkstemp(prefix='nav2_', suffix='.sdf')
     world_sdf_xacro = ExecuteProcess(
         cmd=['xacro', '-o', world_sdf, ['headless:=', 'False'], world])
     start_gazebo_cmd = ExecuteProcess(
