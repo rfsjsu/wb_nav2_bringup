@@ -16,7 +16,7 @@ ros2 launch wb_nav2_bringup tb4_simulation_launch.py \
     headless:=False \
     robot_name:="RX20_16" \
     robot_sdf:="$WB_PATH/urdf/RX20_16/main.xacro" \
-    world:="$WB_PATH/worlds/depot.sdf" \
+    world:="$WB_PATH/worlds/mission_depot_v1.sdf" \
     map:="$WB_PATH/maps/depot.yaml" \
     params_file:="$WB_PATH/params/forklift_nav2_params.yaml" \
     bridge_config:="$WB_PATH/configs/forklift_bridge.yaml" \

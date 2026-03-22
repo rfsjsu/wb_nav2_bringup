@@ -1,0 +1,3 @@
+UC #,Title,Purpose,Code File,Status
+UC-01,Bring robot to home,"Tests the forklift's ability to autonomously navigate back to the starting zone (S) from any position on the map.",missions/mission_1.py,Done
+UC-02,Move Pallet P1 to D2,"Tests the forklift's ability to autonomously pick up pallet P1 using AprilTag docking and deliver it to drop zone D2.",missions/mission_2.py,In Progress

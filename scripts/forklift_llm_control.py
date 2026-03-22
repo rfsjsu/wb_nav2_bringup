@@ -1,6 +1,6 @@
 from langchain_anthropic import ChatAnthropic
 from langchain_ollama import ChatOllama
-from langchain.agents import tool
+from langchain_core.tools import tool
 from rosa import ROSA
 from rosa.prompts import RobotSystemPrompts, system_prompts
 import os
@@ -67,11 +67,32 @@ LOCATIONS = {
         "orientation": {
             "x": 0.0,
             "y": 0.0,
-            "z": 0.0,
+            "z": 1.0,
             "w": 0.0,
         },
     },
 }
+
+@tool
+def execute_mission(mission_number: int) -> str:
+    """
+    Executes a predefined mission by its number.
+    Mission 1: Bring robot back to home (S zone).
+    Mission 2: Move pallet P1 to destination D2.
+
+    :param mission_number: The mission number to execute (e.g. 1, 2, 3)
+    """
+    import subprocess
+    import os
+    print(f"DEBUG: Executing mission {mission_number}")
+    mission_path = os.path.expanduser(
+        f"~/ros2_ws/src/wb_nav2_bringup/scripts/missions/mission_{mission_number}.py"
+    )
+    if not os.path.exists(mission_path):
+        return f"Mission {mission_number} not found at {mission_path}"
+    subprocess.run(["python3", mission_path])
+    return f"Mission {mission_number} complete!"
+
 
 @tool
 def get_velocity() -> str:
@@ -353,6 +374,7 @@ def main():
         ros_version=2,
         llm=llm,
         tools=[
+            execute_mission,
             send_linear_x_vel,
             send_linear_z_vel,
             send_angular_z_vel,
