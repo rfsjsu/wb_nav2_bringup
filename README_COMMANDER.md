@@ -1,6 +1,6 @@
 # Mission Framework
 
-This document covers the mission framework added in the `minsu/commander_test` branch.
+This document covers the mission framework for autonomous pallet transport.
 
 ## Post-Clone Setup (Fresh Install Notes)
 

@@ -16,7 +16,8 @@ Steps:
   7. Go home
 """
 import sys
-sys.path.append('/home/minsu/ros2_ws/src/wb_nav2_bringup/scripts')
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pallet_mission import init, go_to, go_to_destination, dock, raise_fork, lower_fork, backup, go_home, shutdown, PALLETS, DESTINATIONS
 from pallet_mission import DOCK_STAGING  # staging positions per dock
 

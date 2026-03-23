@@ -3,7 +3,8 @@
 Mission 1: Bring robot to home (S zone)
 """
 import sys
-sys.path.append('/home/minsu/ros2_ws/src/wb_nav2_bringup/scripts')
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pallet_mission import init, go_home, shutdown
 
 def main():
