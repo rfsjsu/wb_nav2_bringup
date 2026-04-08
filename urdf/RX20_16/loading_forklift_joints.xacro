@@ -60,7 +60,7 @@
     <child link="lift_link" />
     <origin xyz="0.134 0 0.22" rpy="0 0 0" />
     <axis xyz="0 0 1" />
-    <limit lower="-0.149" upper="1.5" effort="100" velocity="0.3"/>
+    <limit lower="-0.25" upper="1.5" effort="100" velocity="0.3"/>
      <dynamics damping="1.0" friction="0.001"/>
   </joint>
 
@@ -73,79 +73,39 @@
 
     <collision >
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry> <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link_wide.dae" />
+    <geometry>
+      <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link_mid_short.dae" />
     </geometry>
     </collision>
 
     <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <geometry>
-          <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link_wide.dae" />
+      <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link_mid_short.dae" />
     </geometry>
     </visual>
   </link>
     
-  <!-- prismatic link -->
   <joint name="sideshift_joint" type="fixed">
     <parent link="lift_link" />
     <child link="sideshift_link" />
-    <origin xyz="0.06 0 -0.25" rpy="0 0 0" />
+    <origin xyz="0.06 0 -0.20" rpy="0 0 0" />
     <axis xyz="0 1 0" />
     <limit lower="-0.15" upper="0.2" effort="100" velocity="0.3"/>
      <dynamics damping="10" friction="1"/>
   </joint>
 
-  <!-- <transmission name="tran1">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="tilt_joint">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-    </joint>
-    <actuator name="motor1">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-
-  <transmission name="tran2">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="lift_joint">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-    </joint>
-    <actuator name="motor2">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-
-  <transmission name="tran3">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="sideshift_joint">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-    </joint>
-    <actuator name="motor3">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission> -->
-
-  <!-- <gazebo>
-    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-      <robotNamespace>/RX20_16</robotNamespace>
-      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
-    </plugin>
-  </gazebo> -->
-
-  <link name='box1'>
+   <!-- <link name='box1'>
     <collision>
       <geometry>
         <box size="0.8 0.08 0.042"/>
       </geometry>
     </collision>
-    <!-- <visual>
+    <visual>
       <geometry>
         <box size="0.8 0.08 0.04"/>
       </geometry>
-    </visual> -->
+    </visual>
   </link>
 
   <joint name="pad_joint1" type="fixed">
@@ -161,11 +121,11 @@
         <box size="0.8 0.08 0.042"/>
       </geometry>
     </collision>
-    <!-- <visual>
+    <visual>
       <geometry>
         <box size="0.8 0.08 0.04"/>
       </geometry>
-    </visual> -->
+    </visual>
   </link>
 
   <joint name="pad_joint2" type="fixed">
@@ -181,11 +141,11 @@
         <box size="0.02 0.2 0.1"/>
       </geometry>
     </collision>
-    <!-- <visual>
+    <visual>
       <geometry>
         <box size="0.02 0.2 0.1"/>
       </geometry>
-    </visual> -->
+    </visual>
   </link>
 
   <joint name="pad_joint" type="fixed">
@@ -193,7 +153,7 @@
     <child link="box" />
     <origin xyz="0.0 0.0 0.05" rpy="0 0 0" />
     <axis xyz="0 0 1" />
-  </joint>
+  </joint> -->
 
     <!-- Gazebo plugin configuration -->
     <ros2_control name="2DofPosition" type="system">
@@ -204,7 +164,7 @@
             <command_interface name="position" />
             <command_interface name="velocity" />
             <state_interface name="position">
-                <param name="initial_value">-0.1</param>
+                <param name="initial_value">-0.15</param>
             </state_interface>
             <state_interface name="velocity"/>
             <state_interface name="effort"/>
