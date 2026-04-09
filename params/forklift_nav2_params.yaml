@@ -493,7 +493,7 @@ docking_server:
     rosmaster_x3_dock:
       plugin: 'opennav_docking::SimpleNonChargingDock'
       docking_threshold: 0.1 # 0.05
-      staging_x_offset: 2.25
+      staging_x_offset: 2.5
       staging_yaw_offset: 3.14
       use_external_detection_pose: true
       use_battery_status: false # true

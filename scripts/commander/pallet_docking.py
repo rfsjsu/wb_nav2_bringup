@@ -27,19 +27,27 @@ node = None
 vel_publisher = None
 
 # pallet positions for picking
-pallet_positions = {
-    'pallet_A': [-10.0, 2.0, 1.57],
-}
+# pallet_positions = {
+#     'pallet_A': [-10.0, 2.0, 1.57],
+# }
 
 # pallet id
 pallet_ids = [
+    'dock1',
+    'dock2',
     'dock3',
+    'dock4',
+    'dock5'
 ]
 
 # Shipping destination for picked products
-shipping_destinations = {
-    'frieght_bay_1': [-4.0, 0.0, 0.0],
-}
+shipping_destinations = [
+    [-4.0, -4.0, 0.0],
+    [-4.0, -2.0, 0.0],
+    [-4.0, -0.0, 0.0],
+    [-4.0, 2.0, 0.0],
+    [-4.0, 4.0, 0.0],
+]
 
 def send_linear_z_vel(velocity: float) -> str:
     """
@@ -49,15 +57,36 @@ def send_linear_z_vel(velocity: float) -> str:
 
     :param velocity: the velocity at which the robot should move
     """
-    if(velocity > 0.0):
-        print("Raising the fork")
-    elif(velocity < 0.0):
-        print("Lowering the fork")
     global vel_publisher
     twist = Twist()
     twist.linear.z = velocity
     vel_publisher.publish(twist)
     return "Linear z velocity set to %s" % velocity
+
+def task_wait(navigator):
+    i = 0
+    while not navigator.isTaskComplete():
+        i += 1
+        feedback = navigator.getFeedback()
+        if feedback and i % 10 == 0:
+            print('.',end='',flush=True)
+    print()
+
+def fork_up():
+    time.sleep(2)
+    send_linear_z_vel(+1.0)
+    time.sleep(3)
+    send_linear_z_vel(0.0)
+    time.sleep(2)
+    return
+
+def fork_down():
+    time.sleep(2)
+    send_linear_z_vel(-1.0)
+    time.sleep(3)
+    send_linear_z_vel(0.0)
+    time.sleep(2)
+    return
 
 """
 Basic item picking demo. In this demonstration, the expectation
@@ -81,8 +110,8 @@ def main():
     # worker at the pallet jack 7 for shipping. This request would
     # contain the pallet ID ('pallet_A') and shipping destination ('frieght_bay_3')
     ####################
-    request_item_location = 'pallet_A'
-    request_destination = 'frieght_bay_1'
+    # request_item_location = 'pallet_A'
+    # request_destination = 'frieght_bay_1'
     ####################
 
     navigator = BasicNavigator()
@@ -90,95 +119,55 @@ def main():
     time.sleep(10)
     navigator.waitUntilNav2Active()
 
-    navigator.dockRobotByID(pallet_ids[0])
+    fork_down()
 
-    # Do something during our route
-    # (e.x. queue up future tasks or detect person for fine-tuned positioning)
-    # Simply print information for workers on the robot's ETA for the demonstation
-    i = 0
-    while not navigator.isTaskComplete():
-        i += 1
-        feedback = navigator.getFeedback()
-        if feedback and i % 5 == 0:
-            print('.',end='')
-    print()
-    print('Docking complete')
+    for id in [4,3,2,1,0]:
 
-    # Add lifting action here
-    #
-    time.sleep(2)
-    send_linear_z_vel(1.0)
-    time.sleep(4)
-    send_linear_z_vel(0.0)
-    time.sleep(2)
+        # Spinning around seems to help AMCL get a more accurate pose estimation.
+        navigator.spin(spin_dist=1.0, time_allowance=30)
+        task_wait(navigator)
 
-    # Backup a bit before turning to new goal
-    print("Backing up")
-    navigator.backup(backup_dist=0.5, backup_speed=0.5, time_allowance=20)
-    while not navigator.isTaskComplete():
-        i += 1
-        feedback = navigator.getFeedback()
-        if feedback and i % 5 == 0:
-            print('.',end='')
-    print()
-    print("Back up complete")
+        navigator.dockRobotByID(pallet_ids[id])
+        task_wait(navigator)
+        print('Docking complete')
 
-    # Sping 180 degrees before turning to new goal
-    print("Spin around")
-    navigator.spin()
-    while not navigator.isTaskComplete():
-        i += 1
-        feedback = navigator.getFeedback()
-        if feedback and i % 5 == 0:
-            print('.',end='')
-    print()
-    print("Spin complete")
+        fork_up()
 
-    # Go to drop off point
-    # To convert the yaw angle in radians to quaterion z and w
-    # z = sin(yaw/2)
-    # w = cos(yaw/2)
-    #
-    # yaw = 0 is pointing right, so z=0, w=1
-    #
-    shipping_destination = PoseStamped()
-    shipping_destination.header.frame_id = 'map'
-    shipping_destination.header.stamp = navigator.get_clock().now().to_msg()
-    shipping_destination.pose.position.x = shipping_destinations[
-        request_destination
-    ][0]
-    shipping_destination.pose.position.y = shipping_destinations[
-        request_destination
-    ][1]
-    shipping_destination.pose.orientation.z = 0.0
-    shipping_destination.pose.orientation.w = 1.0
-    navigator.goToPose(shipping_destination)
-    while not navigator.isTaskComplete():
-        i += 1
-        feedback = navigator.getFeedback()
-        if feedback and i % 5 == 0:
-            print('.',end='')
-    print()
-    print("At the drop off point")
+        # Backup a bit before turning to new goal
+        navigator.backup(backup_dist=0.5, backup_speed=0.5, time_allowance=20)
+        task_wait(navigator)
 
-    # Add lifting action here
-    #
-    time.sleep(2)
-    send_linear_z_vel(-1.0)
-    time.sleep(5)
-    send_linear_z_vel(0.0)
-    time.sleep(2)
+        # Sping 180 degrees before turning to new goal
+        navigator.spin(time_allowance=30)
+        task_wait(navigator)
 
-    # Backup a bit before turning to new goal
-    print("Backing up")
-    navigator.backup(backup_dist=1.5, backup_speed=0.5, time_allowance=20)
-    while not navigator.isTaskComplete():
-        i += 1
-        feedback = navigator.getFeedback()
-        if feedback and i % 5 == 0:
-            print('.',end='')
-    print()
-    print("Back up complete")
+        # Go to drop off point
+        # To convert the yaw angle in radians to quaterion z and w
+        # z = sin(yaw/2)
+        # w = cos(yaw/2)
+        #
+        # yaw = 0 is pointing right, so z=0, w=1
+        #
+        shipping_destination = PoseStamped()
+        shipping_destination.header.frame_id = 'map'
+        shipping_destination.header.stamp = navigator.get_clock().now().to_msg()
+        shipping_destination.pose.position.x = shipping_destinations[id][0]
+        shipping_destination.pose.position.y = shipping_destinations[id][1]
+        shipping_destination.pose.orientation.z = 0.0
+        shipping_destination.pose.orientation.w = 1.0
+        navigator.goToPose(shipping_destination)
+        task_wait(navigator)
+
+        fork_down()
+
+        # Backup a bit before turning to new goal
+        navigator.backup(backup_dist=0.75, backup_speed=0.5, time_allowance=20)
+        task_wait(navigator)
+
+        # Add dropping action here again
+        # If we stacked plates, the fork will be too high for the next pallet.
+        #
+        fork_down()
 
     exit(0)
 
