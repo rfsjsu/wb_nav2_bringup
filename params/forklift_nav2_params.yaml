@@ -479,10 +479,10 @@ docking_server:
     controller_frequency: 50.0
     initial_perception_timeout: 5.0
     wait_charge_timeout: 5.0
-    dock_approach_timeout: 120.0
+    dock_approach_timeout: 20.0
     undock_linear_tolerance: 0.05
     undock_angular_tolerance: 0.1
-    max_retries: 3
+    max_retries: 0
     base_frame: "base_link"
     fixed_frame: "odom"
     dock_backwards: false

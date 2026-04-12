@@ -22,6 +22,7 @@ from rclpy.parameter import Parameter
 from geometry_msgs.msg import Twist
 import asyncio
 import time
+import sys
 
 node = None
 vel_publisher = None
@@ -49,6 +50,8 @@ shipping_destinations = [
     [-4.0, 4.0, 0.0],
 ]
 
+forklift_home = [-8.0, 0.0, 0.0]
+
 def send_linear_z_vel(velocity: float) -> str:
     """
     Sets the linear z velocity of the robot to raise or lower the fork.
@@ -63,13 +66,14 @@ def send_linear_z_vel(velocity: float) -> str:
     vel_publisher.publish(twist)
     return "Linear z velocity set to %s" % velocity
 
-def task_wait(navigator):
+def task_wait(navigator, progress=False):
     i = 0
     while not navigator.isTaskComplete():
         i += 1
         feedback = navigator.getFeedback()
         if feedback and i % 10 == 0:
-            print('.',end='',flush=True)
+            if(progress):
+                print('.',end='',flush=True)
     print()
 
 def fork_up():
@@ -96,7 +100,7 @@ and at the pallet jack to remove it
 """
 
 
-def main():
+def main(forklift_home_x=-8.0, forklift_home_y=0.0):
 
     rclpy.init()
 
@@ -106,14 +110,6 @@ def main():
     node = rclpy.create_node("rosa_forklift_node", parameter_overrides=[sim_time_param])
     vel_publisher = node.create_publisher(Twist, "/cmd_vel", 10)
 
-    # Recieved virtual request for picking item at Shelf A and bring to
-    # worker at the pallet jack 7 for shipping. This request would
-    # contain the pallet ID ('pallet_A') and shipping destination ('frieght_bay_3')
-    ####################
-    # request_item_location = 'pallet_A'
-    # request_destination = 'frieght_bay_1'
-    ####################
-
     navigator = BasicNavigator()
 
     time.sleep(10)
@@ -121,15 +117,29 @@ def main():
 
     fork_down()
 
-    for id in [4,3,2,1,0]:
+    for id in [1]:
+
+        # Go to forklift home, facing the doors.
+        shipping_destination = PoseStamped()
+        shipping_destination.header.frame_id = 'map'
+        shipping_destination.header.stamp = navigator.get_clock().now().to_msg()
+        shipping_destination.pose.position.x = float(forklift_home_x)
+        shipping_destination.pose.position.y = float(forklift_home_y)
+        shipping_destination.pose.orientation.z = 1.0
+        shipping_destination.pose.orientation.w = 0.0
+        navigator.goToPose(shipping_destination)
+        task_wait(navigator)
+        result = navigator.getResult()
 
         # Spinning around seems to help AMCL get a more accurate pose estimation.
-        navigator.spin(spin_dist=1.0, time_allowance=30)
-        task_wait(navigator)
+        # navigator.spin(spin_dist=1.0, time_allowance=30)
+        # task_wait(navigator)
 
         navigator.dockRobotByID(pallet_ids[id])
         task_wait(navigator)
-        print('Docking complete')
+        result = navigator.getResult()
+        print("Docking results: ",result)
+        break;
 
         fork_up()
 
@@ -161,7 +171,7 @@ def main():
         fork_down()
 
         # Backup a bit before turning to new goal
-        navigator.backup(backup_dist=0.75, backup_speed=0.5, time_allowance=20)
+        navigator.backup(backup_dist=1.0, backup_speed=0.5, time_allowance=20)
         task_wait(navigator)
 
         # Add dropping action here again
@@ -173,4 +183,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if(len(sys.argv)>1):
+        (x,y) = sys.argv[1:]
+        main(x,y)
+    else:
+        main()
