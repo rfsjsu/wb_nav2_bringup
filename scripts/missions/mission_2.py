@@ -18,7 +18,7 @@ Steps:
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from pallet_mission import init, go_to, go_to_destination, dock, raise_fork, lower_fork, backup, go_home, shutdown, PALLETS, DESTINATIONS
+from pallet_mission import init, go_to, go_to_destination, dock, raise_fork, lower_fork, backup, go_home, shutdown, check_pallet_at_destination, PALLETS, DESTINATIONS
 from pallet_mission import DOCK_STAGING  # staging positions per dock
 
 def main():
@@ -73,7 +73,10 @@ def main():
     print("--- Step 7 complete ---")
 
     print(f"=== Mission 2 complete ===")
+    success = check_pallet_at_destination(pallet, destination)
+    print(f"=== Result: {'SUCCESS' if success else 'FAILED'} ===")
     shutdown()
+    return success
 
 if __name__ == '__main__':
     main()

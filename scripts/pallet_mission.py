@@ -39,8 +39,8 @@ DOCK_STAGING = {
 
 # Drop-off destinations
 DESTINATIONS = {
-    'D2': {'x': -5.0, 'y':  5.5},
-    'D1': {'x': -5.0, 'y': -5.5},
+    'D2': {'x': -5.0, 'y':  5.5, 'oz': 0.7071,  'ow': 0.7071},
+    'D1': {'x': -5.0, 'y': -5.5, 'oz': -0.7071, 'ow': 0.7071},
 }
 
 def init():
@@ -162,7 +162,7 @@ def go_home():
 
 def go_to_destination(dest_name):
     dest = DESTINATIONS[dest_name]
-    go_to(dest['x'], dest['y'])
+    go_to(dest['x'], dest['y'], dest.get('oz', 0.0), dest.get('ow', 1.0))
 
 def spin():
     print("Spinning...")
@@ -172,3 +172,23 @@ def spin():
 
 def shutdown():
     rclpy.shutdown()
+
+def check_pallet_at_destination(pallet_name, dest_name, radius=2.0):
+    """Check if pallet is within radius of destination using gz topic."""
+    import subprocess, math, re
+    dest = DESTINATIONS[dest_name]
+    pallet_model = f'pallet_{pallet_name[1]}'
+    result = subprocess.run(
+        ['gz', 'topic', '-e', '-n', '1', '-t', '/world/mission_depot_v1/pose/info'],
+        capture_output=True, text=True, timeout=5
+    )
+    pattern = rf'name: "{pallet_model}".*?position {{.*?x: ([-\d.]+).*?y: ([-\d.]+)'
+    match = re.search(pattern, result.stdout, re.DOTALL)
+    if not match:
+        print(f"Could not find {pallet_model} position")
+        return False
+    px, py = float(match.group(1)), float(match.group(2))
+    dist = math.sqrt((px - dest['x'])**2 + (py - dest['y'])**2)
+    print(f"{pallet_model} at ({px:.2f}, {py:.2f}), distance to {dest_name}: {dist:.2f}m")
+    return dist < radius
+
