@@ -23,7 +23,6 @@ PALLETS = {
     'P2': 'dock2',
     'P3': 'dock3',
     'P4': 'dock4',
-    'P5': 'dock5',
 }
 
 # Staging positions per pallet (2m in front of dock face, facing the dock)
@@ -35,15 +34,13 @@ DOCK_STAGING = {
     'P1': {'x': -10.0, 'y': -5.0, 'oz': -0.7071, 'ow': 0.7071},
     'P2': {'x': -12.0, 'y': -3.0, 'oz': 0.0,    'ow': 1.0},
     'P3': {'x': -12.0, 'y':  0.0, 'oz': 0.0,    'ow': 1.0},
-    'P4': {'x': -12.0, 'y':  3.0, 'oz': 0.0,    'ow': 1.0},
-    'P5': {'x': -10.0, 'y':  8.0, 'oz': -0.7071, 'ow': 0.7071},
+    'P4': {'x': -10.0, 'y':  8.0, 'oz': -0.7071, 'ow': 0.7071},
 }
 
 # Drop-off destinations
 DESTINATIONS = {
-    'D1': {'x': -7.0, 'y':  0.0},
     'D2': {'x': -5.0, 'y':  5.5},
-    'D3': {'x': -5.0, 'y': -5.5},
+    'D1': {'x': -5.0, 'y': -5.5},
 }
 
 def init():
@@ -128,7 +125,7 @@ def dock(pallet_name):
     wait_for_task(timeout=120.0)
     print(f"Docking complete!")
 
-def backup(distance=0.5, speed=0.5):
+def backup(distance=1.5, speed=0.5):
     print(f"Backing up {distance}m...")
     navigator.backup(backup_dist=distance, backup_speed=speed, time_allowance=20)
     wait_for_task()

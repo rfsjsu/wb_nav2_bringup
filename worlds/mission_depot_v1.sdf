@@ -87,28 +87,6 @@
       </link>
     </model>
 
-    <!-- D zone marker -->
-    <model name="d_zone_marker">
-      <static>true</static>
-      <pose>-7 0 0.001 0 0 0</pose>
-      <link name="link">
-        <visual name="top"><pose>0 1.0 0 0 0 0</pose><geometry><box><size>2.0 0.08 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="bottom"><pose>0 -1.0 0 0 0 0</pose><geometry><box><size>2.0 0.08 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="left"><pose>-1.0 0 0 0 0 0</pose><geometry><box><size>0.08 2.0 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="right"><pose>1.0 0 0 0 0 0</pose><geometry><box><size>0.08 2.0 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <!-- D -->
-        <visual name="d_left"><pose>1.3 0 0 0 0 0</pose><geometry><box><size>0.08 0.6 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="d_top"><pose>1.5 0.25 0 0 0 0</pose><geometry><box><size>0.3 0.08 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="d_bot"><pose>1.5 -0.25 0 0 0 0</pose><geometry><box><size>0.3 0.08 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="d_tr"><pose>1.72 0.17 0 0 0 0</pose><geometry><box><size>0.08 0.2 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="d_br"><pose>1.72 -0.17 0 0 0 0</pose><geometry><box><size>0.08 0.2 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="d_mid"><pose>1.78 0 0 0 0 0</pose><geometry><box><size>0.08 0.1 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <!-- 1 -->
-        <visual name="one_v"><pose>2.1 0 0 0 0 0</pose><geometry><box><size>0.08 0.6 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="one_tl"><pose>1.98 0.25 0 0 0 0</pose><geometry><box><size>0.16 0.08 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-      </link>
-    </model>
-
     <!-- D2 zone marker -->
     <model name="d2_zone_marker">
       <static>true</static>
@@ -134,8 +112,8 @@
       </link>
     </model>
 
-    <!-- D3 zone marker -->
-    <model name="d3_zone_marker">
+    <!-- D1 zone marker -->
+    <model name="d1_zone_marker">
       <static>true</static>
       <pose>-5 -5.5 0.001 0 0 0</pose>
       <link name="link">
@@ -150,11 +128,9 @@
         <visual name="d_tr"><pose>1.72 0.17 0 0 0 0</pose><geometry><box><size>0.08 0.2 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
         <visual name="d_br"><pose>1.72 -0.17 0 0 0 0</pose><geometry><box><size>0.08 0.2 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
         <visual name="d_mid"><pose>1.78 0 0 0 0 0</pose><geometry><box><size>0.08 0.1 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <!-- 3 -->
-        <visual name="three_top"><pose>2.15 0.25 0 0 0 0</pose><geometry><box><size>0.3 0.08 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="three_mid"><pose>2.15 0 0 0 0 0</pose><geometry><box><size>0.3 0.08 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="three_bot"><pose>2.15 -0.25 0 0 0 0</pose><geometry><box><size>0.3 0.08 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
-        <visual name="three_r"><pose>2.27 0 0 0 0 0</pose><geometry><box><size>0.08 0.58 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
+        <!-- 1 -->
+        <visual name="one_v"><pose>2.1 0 0 0 0 0</pose><geometry><box><size>0.08 0.6 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
+        <visual name="one_tl"><pose>1.98 0.25 0 0 0 0</pose><geometry><box><size>0.16 0.08 0.001</size></box></geometry><material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material></visual>
       </link>
     </model>
 
@@ -256,11 +232,11 @@
       <pose>-14 0 0.01 0 0 1.5708</pose>
     </include>
 
-    <!-- Wooden Pallet, upper back wall -->
+    <!-- Wooden Pallet, upper wall -->
     <!-- Pallet 4 marker -->
     <model name="pallet_4_marker">
       <static>true</static>
-      <pose>-14 3 0.001 0 0 0</pose>
+      <pose>-10 6 0.001 0 0 0</pose>
       <link name="link">
         <visual name="top"><pose>0 0.6 0 0 0 0</pose><geometry><box><size>1.6 0.08 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
         <visual name="bottom"><pose>0 -0.6 0 0 0 0</pose><geometry><box><size>1.6 0.08 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
@@ -278,33 +254,6 @@
     <include>
       <uri>model://pallet</uri>
       <name>pallet_4</name>
-      <pose>-14 3 0.01 0 0 1.5708</pose>
-    </include>
-
-    <!-- Wooden Pallet, upper wall -->
-    <!-- Pallet 5 marker -->
-    <model name="pallet_5_marker">
-      <static>true</static>
-      <pose>-10 6 0.001 0 0 0</pose>
-      <link name="link">
-        <visual name="top"><pose>0 0.6 0 0 0 0</pose><geometry><box><size>1.6 0.08 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="bottom"><pose>0 -0.6 0 0 0 0</pose><geometry><box><size>1.6 0.08 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="left"><pose>-0.8 0 0 0 0 0</pose><geometry><box><size>0.08 1.2 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="right"><pose>0.8 0 0 0 0 0</pose><geometry><box><size>0.08 1.2 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="p_left"><pose>1.2 0.1 0 0 0 0</pose><geometry><box><size>0.08 0.6 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="p_top"><pose>1.35 0.3 0 0 0 0</pose><geometry><box><size>0.22 0.08 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="p_mid"><pose>1.35 0.1 0 0 0 0</pose><geometry><box><size>0.22 0.08 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="p_right"><pose>1.5 0.2 0 0 0 0</pose><geometry><box><size>0.08 0.28 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="five_top"><pose>1.8 0.3 0 0 0 0</pose><geometry><box><size>0.3 0.08 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="five_mid"><pose>1.8 0.1 0 0 0 0</pose><geometry><box><size>0.3 0.08 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="five_bot"><pose>1.8 -0.1 0 0 0 0</pose><geometry><box><size>0.3 0.08 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="five_tl"><pose>1.65 0.2 0 0 0 0</pose><geometry><box><size>0.08 0.18 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-        <visual name="five_br"><pose>1.95 0.0 0 0 0 0</pose><geometry><box><size>0.08 0.18 0.001</size></box></geometry><material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material></visual>
-      </link>
-    </model>
-    <include>
-      <uri>model://pallet</uri>
-      <name>pallet_5</name>
       <pose>-10 6 0.01 0 0 0</pose>
     </include>
   </world>
