@@ -70,7 +70,7 @@ if __name__ == '__main__':
     results = []
 
     home_y = [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]
-    home_x = [-6.0, -8.0, -10.0, -12.0]
+    home_x = [-12.0, -10.0, -8.0, -6.0]
 
     # home_y = [-1.0]
     # home_x = [-8.0]
@@ -85,7 +85,7 @@ if __name__ == '__main__':
             print("Starting forklift simulation")
             process = run_rx20_16()
 
-            bootup_time = 20
+            bootup_time = 25
             print(f"Waiting {bootup_time} seconds before pallet trial {trial_idx}.")
             for i in range(bootup_time):
                 time.sleep(1)
@@ -112,7 +112,7 @@ if __name__ == '__main__':
             shutdown_rviz()
             shutdown_gazebo()
 
-            shutdown_time = 15
+            shutdown_time = 20
             print(f"Waiting {shutdown_time} seconds for all processes to end.")
             for i in range(shutdown_time):
                 time.sleep(1)

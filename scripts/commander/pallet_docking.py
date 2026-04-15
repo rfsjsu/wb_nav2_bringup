@@ -112,7 +112,7 @@ def main(forklift_home_x=-8.0, forklift_home_y=0.0):
 
     navigator = BasicNavigator()
 
-    time.sleep(10)
+    time.sleep(15)
     navigator.waitUntilNav2Active()
 
     fork_down()
