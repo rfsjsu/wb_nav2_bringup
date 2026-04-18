@@ -24,6 +24,7 @@ PALLETS = {
     'P2': 'dock2',
     'P3': 'dock3',
     'P4': 'dock4',
+    'P5': 'dock5',
 }
 
 # Staging positions per pallet (2m in front of dock face, facing the dock)
@@ -31,18 +32,19 @@ PALLETS = {
 # dock1: yaw=+90deg (+Y) -> approach from -Y -> robot faces +Y: oz=0.7071, ow=0.7071
 # dock2,3,4: yaw=0deg (+X) -> approach from -X -> robot faces +X: oz=0.0, ow=1.0
 # dock5: yaw=-90deg (-Y) -> approach from +Y -> robot faces -Y: oz=-0.7071, ow=0.7071
-DOCK_STAGING = {
-    'P1': {'x': -10.0, 'y': -5.0, 'oz': -0.7071, 'ow': 0.7071},
-    'P2': {'x': -12.0, 'y': -3.0, 'oz': 0.0,    'ow': 1.0},
-    'P3': {'x': -12.0, 'y':  0.0, 'oz': 0.0,    'ow': 1.0},
-    'P4': {'x': -12.0, 'y': 3.0, 'oz': 0.0,    'ow': 1.0},
-    'P5': {'x': -10.0, 'y':  8.0, 'oz': -0.7071, 'ow': 0.7071},
-}
+# DOCK_STAGING = {
+#     'P1': {'x': -10.0, 'y': -5.0, 'oz': -0.7071, 'ow': 0.7071},
+#     'P2': {'x': -12.0, 'y': -3.0, 'oz': 0.0,    'ow': 1.0},
+#     'P3': {'x': -12.0, 'y':  0.0, 'oz': 0.0,    'ow': 1.0},
+#     'P4': {'x': -12.0, 'y': 3.0, 'oz': 0.0,    'ow': 1.0},
+#     'P5': {'x': -10.0, 'y':  8.0, 'oz': -0.7071, 'ow': 0.7071},
+# }
 
 # Drop-off destinations
 DESTINATIONS = {
     'D2': {'x': -5.0, 'y':  5.5, 'oz': 0.7071,  'ow': 0.7071},
     'D1': {'x': -5.0, 'y': -5.5, 'oz': -0.7071, 'ow': 0.7071},
+    'NONE': None,
 }
 
 def init():
@@ -73,22 +75,25 @@ def set_gz_view():
     ], capture_output=True)
     return
 
-def wait_for_task(timeout=60.0):
+def wait_for_task(timeout=60.0, debug=False):
     i = 0
     start = time.time()
     while not navigator.isTaskComplete():
         i += 1
         feedback = navigator.getFeedback()
-        if feedback and i % 5 == 0:
-            print('.', end='', flush=True)
-        if time.time() - start > timeout:
-            print()
-            print("Timeout! Cancelling task...")
-            navigator.cancelTask()
-            break
-    print()
+        if(debug):
+            if feedback and i % 5 == 0:
+                print('.', end='', flush=True)
+            if time.time() - start > timeout:
+                print()
+                print("Timeout! Cancelling task...")
+                navigator.cancelTask()
+                break
+    if(debug):
+        print()
+    return
 
-def wait_until_in_zone(cx, cy, radius=1.5, timeout=120.0):
+def wait_until_in_zone(cx, cy, radius=1.5, timeout=120.0, debug=False):
     """목적지 zone 안에 들어오면 태스크 취소하고 종료"""
     import math
     i = 0
@@ -97,7 +102,7 @@ def wait_until_in_zone(cx, cy, radius=1.5, timeout=120.0):
         i += 1
         feedback = navigator.getFeedback()
         if feedback and i % 5 == 0:
-            print('.', end='', flush=True)
+            if(debug): print('.', end='', flush=True)
             rx = feedback.current_pose.pose.position.x
             ry = feedback.current_pose.pose.position.y
             dist = math.sqrt((rx - cx)**2 + (ry - cy)**2)
@@ -140,19 +145,28 @@ def lower_fork(duration=5.0):
     print("Fork lowered!")
     input("Press ENTER to continue")
 
-def dock(pallet_name):
+def dock(pallet_name, timeout=120.0, debug=False):
     dock_id = PALLETS[pallet_name]
-    print(f"Docking to {pallet_name} ({dock_id})...")
+    if(debug): print(f"Docking to {pallet_name} ({dock_id})...")
     navigator.dockRobotByID(dock_id)
     time.sleep(1.0)  # wait for Nav2 to register the docking task
-    wait_for_task(timeout=120.0)
-    print(f"Docking complete!")
+    wait_for_task(timeout=timeout)
+    if(debug): print(f"Docking complete!")
+    return navigator.getResult()
 
-def backup(distance=1.5, speed=0.5):
-    print(f"Backing up {distance}m...")
+def backup(distance=1.5, speed=0.5, debug=False):
+    if(debug): print(f"Backing up {distance}m...")
     navigator.backup(backup_dist=distance, backup_speed=speed, time_allowance=20)
     wait_for_task()
-    print("Backup complete!")
+    if(debug): print("Backup complete!")
+    return
+
+def spin(debug=False):
+    if(debug): print("Spinning around")
+    navigator.spin()
+    wait_for_task()
+    if(debug): print("Spin complete")
+    return
 
 def go_to(x, y, oz=0.0, ow=1.0):
     print(f"Navigating to ({x}, {y})...")
@@ -168,8 +182,8 @@ def go_to(x, y, oz=0.0, ow=1.0):
     wait_for_task()
     print(f"Arrived at ({x}, {y})!")
 
-def go_home():
-    print("Going home...")
+def go_home(debug=False):
+    if(debug): print("Going home...")
     loc = LOCATIONS['home']
     goal = PoseStamped()
     goal.header.frame_id = 'map'
@@ -181,17 +195,17 @@ def go_home():
     navigator.goToPose(goal)
     time.sleep(1.0)
     wait_for_task(timeout=120.0)
-    print("Home!")
+    if(debug): print("Home!")
 
 def go_to_destination(dest_name):
     dest = DESTINATIONS[dest_name]
     go_to(dest['x'], dest['y'], dest.get('oz', 0.0), dest.get('ow', 1.0))
 
-def spin():
-    print("Spinning...")
-    navigator.spin()
-    wait_for_task()
-    print("Spin complete!")
+# def spin():
+#     print("Spinning...")
+#     navigator.spin()
+#     wait_for_task()
+#     print("Spin complete!")
 
 def shutdown():
     rclpy.shutdown()
@@ -205,7 +219,7 @@ def check_pallet_at_destination(pallet_name, dest_name, radius=2.0):
         ['gz', 'topic', '-e', '-n', '1', '-t', '/world/mission_depot_v2/pose/info'],
         capture_output=True, text=True, timeout=5
     )
-    pattern = rf'name: "{pallet_model}".*?position {{.*?x: ([-\d.]+).*?y: ([-\d.]+)'
+    pattern = rf'name: "{pallet_model}".*?position {{.*?x: ([-\d.e]+).*?y: ([-\d.e]+)'
     match = re.search(pattern, result.stdout, re.DOTALL)
     if not match:
         print(f"Could not find {pallet_model} position")
@@ -214,6 +228,29 @@ def check_pallet_at_destination(pallet_name, dest_name, radius=2.0):
     dist = math.sqrt((px - dest['x'])**2 + (py - dest['y'])**2)
     print(f"{pallet_model} at ({px:.2f}, {py:.2f}), distance to {dest_name}: {dist:.2f}m")
     return dist < radius
+
+def pallet_movement_from_origin(pallet_name, starting_poses):
+    """
+    Return the distance between the pallet's current pose to the starting pose
+    before docking.  This is intended to be used after docking and before lifting
+    the pallet to quantify any movement of the pallent by a misaligned fork
+    hitting the pallet.
+    """
+    import subprocess, math, re
+    start = starting_poses[pallet_name]
+    pallet_model = f'pallet_{pallet_name[1]}'
+    result = subprocess.run(
+        ['gz', 'topic', '-e', '-n', '1', '-t', '/world/mission_depot_v2/pose/info'],
+        capture_output=True, text=True, timeout=5
+    )
+    pattern = rf'name: "{pallet_model}".*?position {{.*?x: ([-\d.e]+).*?y: ([-\d.e]+)'
+    match = re.search(pattern, result.stdout, re.DOTALL)
+    if not match:
+        print(f"Could not find {pallet_model} position")
+        return False
+    px, py = float(match.group(1)), float(match.group(2))
+    dist = math.sqrt((px - start['x'])**2 + (py - start['y'])**2)
+    return dist
 
 
 # ============== RSF CODE ==================
