@@ -87,6 +87,12 @@
           <geometry><box><size>0.1 3.0 0.001</size></box></geometry>
           <material><ambient>1 0 0 1</ambient><diffuse>1 0 0 1</diffuse></material>
         </visual>
+        <!-- center line -->
+        <visual name="center_line">
+          <pose>-6 0 0 0 0 0</pose>
+          <geometry><box><size>12.0 0.02 0.001</size></box></geometry>
+          <material><ambient>1 0 0 1</ambient><diffuse>1 0 0 1</diffuse></material>
+        </visual>
         <!-- S -->
         <visual name="s_top"><pose>0 -2.3 0 0 0 0</pose><geometry><box><size>1.0 0.16 0.001</size></box></geometry><material><ambient>1 0 0 1</ambient><diffuse>1 0 0 1</diffuse></material></visual>
         <visual name="s_mid"><pose>0 -2.7 0 0 0 0</pose><geometry><box><size>1.0 0.16 0.001</size></box></geometry><material><ambient>1 0 0 1</ambient><diffuse>1 0 0 1</diffuse></material></visual>
