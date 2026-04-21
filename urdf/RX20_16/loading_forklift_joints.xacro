@@ -74,14 +74,14 @@
     <collision >
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link_mid_short.dae" />
+      <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link_mid_short_dark.dae" />
     </geometry>
     </collision>
 
     <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link_mid_short.dae" />
+      <mesh filename="file:$(find wb_nav2_bringup)/urdf/RX20_16/meshes/sideshift_link_mid_short_dark.dae" />
     </geometry>
     </visual>
   </link>
