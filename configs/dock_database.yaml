@@ -17,4 +17,9 @@ docks:
   dock4:
     type: 'rosmaster_x3_dock'
     frame: map
+    pose: [-14.0, 3.0, 0.0]
+
+  dock5:
+    type: 'rosmaster_x3_dock'
+    frame: map
     pose: [-10.0, 6.0, -1.5708]

@@ -23,6 +23,7 @@ PALLETS = {
     'P2': 'dock2',
     'P3': 'dock3',
     'P4': 'dock4',
+    'P5': 'dock5',
 }
 
 # Staging positions per pallet (2m in front of dock face, facing the dock)
@@ -34,7 +35,8 @@ DOCK_STAGING = {
     'P1': {'x': -10.0, 'y': -5.0, 'oz': -0.7071, 'ow': 0.7071},
     'P2': {'x': -12.0, 'y': -3.0, 'oz': 0.0,    'ow': 1.0},
     'P3': {'x': -12.0, 'y':  0.0, 'oz': 0.0,    'ow': 1.0},
-    'P4': {'x': -10.0, 'y':  8.0, 'oz': -0.7071, 'ow': 0.7071},
+    'P4': {'x': -12.0, 'y':  3.0, 'oz': 0.0,    'ow': 1.0},
+    'P5': {'x': -10.0, 'y':  8.0, 'oz': -0.7071, 'ow': 0.7071},
 }
 
 # Drop-off destinations
@@ -68,8 +70,14 @@ def wait_for_task(timeout=60.0):
             print()
             print("Timeout! Cancelling task...")
             navigator.cancelTask()
-            break
+            return False
     print()
+    result = navigator.getResult()
+    if result == TaskResult.SUCCEEDED:
+        return True
+    else:
+        print(f"Task failed with result: {result}")
+        return False
 
 def wait_until_in_zone(cx, cy, radius=1.5, timeout=120.0):
     """목적지 zone 안에 들어오면 태스크 취소하고 종료"""
@@ -121,9 +129,13 @@ def dock(pallet_name):
     dock_id = PALLETS[pallet_name]
     print(f"Docking to {pallet_name} ({dock_id})...")
     navigator.dockRobotByID(dock_id)
-    time.sleep(1.0)  # wait for Nav2 to register the docking task
-    wait_for_task(timeout=120.0)
-    print(f"Docking complete!")
+    time.sleep(1.0)
+    success = wait_for_task(timeout=120.0)
+    if success:
+        print(f"Docking complete!")
+    else:
+        print(f"Docking failed!")
+    return success
 
 def backup(distance=1.5, speed=0.5):
     print(f"Backing up {distance}m...")
@@ -141,9 +153,13 @@ def go_to(x, y, oz=0.0, ow=1.0):
     goal.pose.orientation.z = oz
     goal.pose.orientation.w = ow
     navigator.goToPose(goal)
-    time.sleep(1.0)  # wait for Nav2 to register the new task
-    wait_for_task()
-    print(f"Arrived at ({x}, {y})!")
+    time.sleep(1.0)
+    success = wait_for_task(timeout=120.0)
+    if success:
+        print(f"Arrived at ({x}, {y})!")
+    else:
+        print(f"Failed to reach ({x}, {y})!")
+    return success
 
 def go_home():
     print("Going home...")
@@ -162,7 +178,7 @@ def go_home():
 
 def go_to_destination(dest_name):
     dest = DESTINATIONS[dest_name]
-    go_to(dest['x'], dest['y'], dest.get('oz', 0.0), dest.get('ow', 1.0))
+    return go_to(dest['x'], dest['y'], dest.get('oz', 0.0), dest.get('ow', 1.0))
 
 def spin():
     print("Spinning...")

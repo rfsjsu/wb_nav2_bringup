@@ -30,7 +30,8 @@ PALLET_ORIGINS = {
     'P1': {'x': -10.0, 'y': -6.0,  'z': 0.01, 'yaw': 0.0},
     'P2': {'x': -14.0, 'y': -3.0,  'z': 0.01, 'yaw': 1.5708},
     'P3': {'x': -14.0, 'y':  0.0,  'z': 0.01, 'yaw': 1.5708},
-    'P4': {'x': -10.0, 'y':  6.0,  'z': 0.01, 'yaw': 0.0},
+    'P4': {'x': -14.0, 'y':  3.0,  'z': 0.01, 'yaw': 1.5708},
+    'P5': {'x': -10.0, 'y':  6.0,  'z': 0.01, 'yaw': 0.0},
 }
 
 WORLD_NAME = 'mission_depot_v1'
@@ -61,7 +62,10 @@ def run_mission(pallet, destination):
     start_time = time.time()
     try:
         print(f"\n--- Docking to {pallet} ---")
-        dock(pallet)
+        if not dock(pallet):
+            print("Docking failed, returning home...")
+            go_home()
+            return False, time.time() - start_time
 
         print(f"--- Raising fork ---")
         raise_fork()
