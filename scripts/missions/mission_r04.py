@@ -49,7 +49,7 @@ PALLET_FIXED = {
     'P5': {'x': -10.0, 'y':  6.0,  'z': 0.01, 'yaw': 0.0},
 }
 
-ANGLES = np.arange(15.0, -16.0, -1.0)
+ANGLES = np.arange(10.0, -12.0, -2.0)
 
 # This will sort by increasing displacement regardless of sign.
 indicies = np.argsort(np.abs(ANGLES))
@@ -215,14 +215,14 @@ def main():
 
     results = []
     attempt = 0
-    for angle in ANGLES:
-        pallet_rotation(angle)
-        for pallet in pallets:
-            reset_pallet(pallet)
-        print(f"=== Pallet Angle: {angle} ===")
-        for round_num in range(1, args.rounds + 1):
-            print(f"\n{'='*50}")
-            print(f"Round {round_num}/{args.rounds}")
+    for round_num in range(1, args.rounds + 1):
+        print(f"\n{'='*50}")
+        print(f"Round {round_num}/{args.rounds}")
+        for angle in ANGLES:
+            pallet_rotation(angle)
+            for pallet in pallets:
+                reset_pallet(pallet)
+            print(f"=== Pallet Angle: {angle} ===")
             for pallet, destination in combos:
                 attempt += 1
                 print(f"\n[{attempt}/{total}] {pallet} → {destination}")
