@@ -9,6 +9,7 @@
 <xacro:include filename="$(find wb_nav2_bringup)/urdf/RX20_16/front_wheels.xacro" />
 <!-- <xacro:include filename="$(find wb_nav2_bringup)/urdf/RX20_16/d435_camera.xacro" /> -->
 <xacro:include filename="$(find wb_nav2_bringup)/urdf/RX20_16/camera.xacro" />
+<xacro:include filename="$(find wb_nav2_bringup)/urdf/RX20_16/top_camera.xacro" />
 <xacro:include filename="$(find wb_nav2_bringup)/urdf/RX20_16/loading_forklift_joints.xacro" />
 <xacro:include filename="$(find wb_nav2_bringup)/urdf/RX20_16/wheel_control.xacro" />
 
@@ -19,6 +20,7 @@
 <xacro:rx20_front_wheel name="left" x_loading="0.0" y_loading="0.466" z_loading="0.0" radius="0.181" width="0.18" flip="-1" />
 
 <xacro:camera name="front"  x="0.38"  y="0" z="-0.1" roll="0.0" pitch="0.0" yaw="0.0"/>
+<xacro:top_camera name="top"  x="0.38"  y="0" z="1.75" roll="0.0" pitch="0.175" yaw="0.0"/>
 
 <!-- <xacro:nav_lidar name="top"  x="0."  y="0.0" z="2" roll="0" pitch="0" yaw="0.0" resolution="1"/> -->
 <!-- <xacro:detection_lidar name="front"  x="0.0"  y="0.0" z="2.0" roll="0" pitch="0" yaw="0" resolution="1"/> -->
