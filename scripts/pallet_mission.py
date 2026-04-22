@@ -155,18 +155,48 @@ def dock(pallet_name, timeout=120.0, debug=False):
     return navigator.getResult()
 
 def backup(distance=1.5, speed=0.5, debug=False):
+    '''
+    The Nav2 Simple Command to backup works except in the case when navigation is blocked.
+    In those cases, the return status is TaskResult.FAILED.  Should that happen we can
+    effect backing up by bypassing backup through Nav2 and instead command the wheels
+    directly.
+
+    A specific case where this is necessary is in Nav2 docking.  When docking, the costmap
+    is ignored so navigation allows the robot to touch the dock.  However, if it misses
+    the dock, it can contact the wall behind it. Once the docking action times out, normal
+    navigation is resumed but at that point the robot is in the "forbidden" zone of the
+    local costmap.  When robot is in that region, navigation can't figure out which way to
+    go and so Nav2 directed motion is frozen.  The robot is stuck to the wall.
+    
+    The Nav2 maintainer recommends using the keyboard teleop to manually move the robot
+    into the clear zone so navigation will work.  However, as we are running unattended we
+    have to program the manual motion.  So here, if backup fails, we assume we got stuck
+    in the local costmap and reverse the wheels for a few seconds to back away from the wall.
+    '''
     if(debug): print(f"Backing up {distance}m...")
-    navigator.backup(backup_dist=distance, backup_speed=speed, time_allowance=20)
+    navigator.backup(backup_dist=distance,
+                     backup_speed=speed,
+                    #  disable_collision_checks=True,  # This is not in the ROS2 Jazzy
+                     time_allowance=20)
     wait_for_task()
+    status = navigator.getResult()
+    time.sleep(0.5)
+    if(status == TaskResult.FAILED):
+        if(debug): print("Stuck!!! Trying teleop backup.")
+        send_linear_x_vel(-1.0)
+        time.sleep(2.0)
+        send_linear_x_vel(0.0)
+        time.sleep(0.5)
+        if(debug): print("Emergency backup complete.")
     if(debug): print("Backup complete!")
-    return
+    return navigator.getResult()
 
 def spin(debug=False):
     if(debug): print("Spinning around")
     navigator.spin()
     wait_for_task()
     if(debug): print("Spin complete")
-    return
+    return navigator.getResult()
 
 def go_to(x, y, oz=0.0, ow=1.0):
     print(f"Navigating to ({x}, {y})...")
@@ -200,12 +230,6 @@ def go_home(debug=False):
 def go_to_destination(dest_name):
     dest = DESTINATIONS[dest_name]
     go_to(dest['x'], dest['y'], dest.get('oz', 0.0), dest.get('ow', 1.0))
-
-# def spin():
-#     print("Spinning...")
-#     navigator.spin()
-#     wait_for_task()
-#     print("Spin complete!")
 
 def shutdown():
     rclpy.shutdown()
@@ -265,6 +289,19 @@ def send_linear_z_vel(velocity: float) -> str:
     global vel_publisher
     twist = Twist()
     twist.linear.z = velocity
+    vel_publisher.publish(twist)
+    return "Linear z velocity set to %s" % velocity
+
+def send_linear_x_vel(velocity: float) -> str:
+    """
+    Sets the linear x velocity of the robot to move it forward or backwards.
+    A positive velocity will move forward.
+
+    :param velocity: the velocity at which the robot should move
+    """
+    global vel_publisher
+    twist = Twist()
+    twist.linear.x = velocity
     vel_publisher.publish(twist)
     return "Linear z velocity set to %s" % velocity
 
