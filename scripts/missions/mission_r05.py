@@ -28,7 +28,8 @@ from datetime import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pallet_mission import (
     init, go_to, go_to_destination, dock, raise_fork, lower_fork, fork_up, fork_down, set_gz_view,
-    backup, spin, go_home, shutdown, pallet_movement_from_origin, PALLETS, DESTINATIONS
+    backup, spin, go_home, shutdown, pallet_movement_from_origin,
+    PALLETS, DESTINATIONS
 )
 
 WORLD_NAME = 'mission_depot_v2'
@@ -50,17 +51,11 @@ PALLET_FIXED = {
     'P5': {'x': -10.0, 'y':  6.0,  'z': 0.01, 'yaw': 0.0},
 }
 
-Y_SHIFT = np.arange(60.0, -65.0, -5.0)
+Y_SHIFT = np.arange(35.0, -40.0, -5.0)
 
 # This will sort by increasing displacement regardless of sign.
 indicies = np.argsort(np.abs(Y_SHIFT))
 Y_SHIFT = Y_SHIFT[indicies]
-
-# def pallet_rotation(degree):
-#     rad = (degree/360.0) * 2 * math.pi
-#     for pallet in PALLET_ORIGINS:
-#         PALLET_ORIGINS[pallet]['yaw'] = PALLET_FIXED[pallet]['yaw'] + rad
-#     return
 
 def pallet_shift(shift):
     """
@@ -112,7 +107,7 @@ def run_mission(pallet, destination, debug=False):
             fork_down() #lower_fork()
 
         if(debug): print(f"--- Backing up ---")
-        backup()
+        backup(debug=debug)
 
         if(debug): print(f"--- Turning around ---")
         spin()
@@ -225,18 +220,19 @@ def main():
 
     results = []
     attempt = 0
-    for shift in Y_SHIFT:
-        pallet_shift(shift)
-        for pallet in pallets:
-            reset_pallet(pallet)
-        print(f"=== Pallet Shift [cm]: {shift} ===")
-        for round_num in range(1, args.rounds + 1):
-            print(f"\n{'='*50}")
-            print(f"Round {round_num}/{args.rounds}")
+
+    for round_num in range(1, args.rounds + 1):
+        print(f"\n{'='*50}")
+        print(f"Round {round_num}/{args.rounds}")
+        for shift in Y_SHIFT:
+            pallet_shift(shift)
+            for pallet in pallets:
+                reset_pallet(pallet)
+            print(f"=== Pallet Shift [cm]: {shift} ===")
             for pallet, destination in combos:
                 attempt += 1
                 print(f"\n[{attempt}/{total}] {pallet} → {destination}")
-                success, distance, duration = run_mission(pallet, destination)
+                success, distance, duration = run_mission(pallet, destination, debug=False)
                 results.append({
                     'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     'pallet': pallet,
