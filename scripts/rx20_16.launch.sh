@@ -2,7 +2,7 @@
 #
 # $>export WS_PATH="$HOME/ros2_ws
 #
-WB_PATH="$WS_PATH/install/wb_nav2_bringup/share/wb_nav2_bringup/"
+WB_PATH="$WS_PATH/install/wb_nav2_bringup/share/wb_nav2_bringup"
 
 # Needed for ros2_control or you get a can't find shared library error.
 # https://github.com/ros-controls/gz_ros2_control/issues/390

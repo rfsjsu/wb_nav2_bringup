@@ -65,6 +65,11 @@ def generate_launch_description():
     world = LaunchConfiguration('world')
     bridge_config = LaunchConfiguration('bridge_config')
 
+    # YOLO configuration
+    use_yolo = LaunchConfiguration('use_yolo')
+    yolo_model = LaunchConfiguration('yolo_model')
+    yolo_device = LaunchConfiguration('yolo_device')
+
     # Set the forklift starting pose in Gazebo.  Make sure to edit forklift_nav2_params.yaml
     # so the AMCL initial pose matches or disable the initial pose in the yaml file and
     # set the pose manually in RViz or publish the pose to /initial_pose.
@@ -179,6 +184,24 @@ def generate_launch_description():
         'robot_sdf',
         default_value=os.path.join(desc_dir, 'urdf', 'tb4_standard', 'turtlebot4.urdf.xacro'),
         description='Full path to robot sdf file to spawn the robot in gazebo',
+    )
+
+    declare_use_yolo_cmd = DeclareLaunchArgument(
+        'use_yolo', 
+        default_value='True', 
+        description='Whether to start YOLO object detection'
+        )
+    
+    declare_yolo_model_cmd = DeclareLaunchArgument(
+        'yolo_model',
+        default_value='yolov8m-world.pt',
+        description='YOLO model to use'
+    )
+
+    declare_yolo_device_cmd = DeclareLaunchArgument(
+        'yolo_device',
+        default_value='cuda:0',
+        description='Device to run on cuda:0'
     )
 
     start_robot_state_publisher_cmd = Node(
@@ -319,6 +342,26 @@ def generate_launch_description():
         ]
     )
 
+    yolo_detector_node = Node(
+        condition=IfCondition(use_yolo),
+        package='wb_nav2_bringup',
+        executable='yolo_detector',
+        name='yolo_detector',
+        namespace=namespace,
+        output='screen',
+        parameters=[{
+            'use_sim_time': use_sim_time,
+            'model': yolo_model,
+            'device': yolo_device,
+            'confidence_threshold': 0.3,
+            'iou_threshold': 0.6,
+            }],
+        remappings=[
+            ('/top/depth_camera/image_raw', '/top/depth_camera/image_raw'),
+            ('/detections', '/yolo/detections'),
+        ]
+    )
+
     # Nodes for controlling the fork raise/lower.
     #
     # twist_to_multiarray enables teleop keyboard control of the fork.
@@ -369,6 +412,10 @@ def generate_launch_description():
     ld.add_action(declare_robot_sdf_cmd)
     ld.add_action(declare_use_respawn_cmd)
 
+    ld.add_action(declare_use_yolo_cmd)
+    ld.add_action(declare_yolo_model_cmd)
+    ld.add_action(declare_yolo_device_cmd)
+
     ld.add_action(set_env_vars_resources)
     ld.add_action(world_sdf_xacro)
     ld.add_action(remove_temp_sdf_file)
@@ -378,6 +425,7 @@ def generate_launch_description():
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(start_robot_state_publisher_cmd)
+    ld.add_action(yolo_detector_node)
     ld.add_action(rviz_cmd)
     ld.add_action(bringup_cmd)
 
