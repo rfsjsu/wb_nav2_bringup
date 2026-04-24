@@ -184,7 +184,7 @@ def backup(distance=1.5, speed=0.5, debug=False):
     if(status == TaskResult.FAILED):
         if(debug): print("Stuck!!! Trying teleop backup.")
         send_linear_x_vel(-1.0)
-        time.sleep(2.0)
+        time.sleep(4.0)
         send_linear_x_vel(0.0)
         time.sleep(0.5)
         if(debug): print("Emergency backup complete.")

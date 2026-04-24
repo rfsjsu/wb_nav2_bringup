@@ -330,13 +330,13 @@
       <pose>-10 2 0 0 0 1.57</pose>
     </include> -->
 
-    <!-- Distracted man blocking the forklift -->
+    <!-- Boxes on pallet blocking the forklift -->
     <!-- <include>
       <uri>
       https://fuel.gazebosim.org/1.0/MovAi/models/pallet_box_mobile
       </uri>
       <name>Boxes_Obstacle</name>
-      <pose>-8 2.5 0 0 0 1.57</pose>
+      <pose>-9 3 0 0 0 1.57</pose>
     </include> -->
 
   </world>

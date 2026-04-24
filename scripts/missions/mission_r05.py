@@ -51,7 +51,7 @@ PALLET_FIXED = {
     'P5': {'x': -10.0, 'y':  6.0,  'z': 0.01, 'yaw': 0.0},
 }
 
-Y_SHIFT = np.arange(35.0, -40.0, -5.0)
+Y_SHIFT = np.arange(50.0, -55.0, -10.0)
 
 # This will sort by increasing displacement regardless of sign.
 indicies = np.argsort(np.abs(Y_SHIFT))

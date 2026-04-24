@@ -21,5 +21,5 @@ ros2 launch wb_nav2_bringup tb4_simulation_launch.py \
     params_file:="$WB_PATH/params/forklift_faster_nav2_params.yaml" \
     bridge_config:="$WB_PATH/configs/forklift_bridge.yaml" \
     rviz_config_file:="$WB_PATH/rviz/docking_view.rviz" \
-    -d -a
+    #-d -a
 
