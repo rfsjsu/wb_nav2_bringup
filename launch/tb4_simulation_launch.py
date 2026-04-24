@@ -345,7 +345,7 @@ def generate_launch_description():
     yolo_detector_node = Node(
         condition=IfCondition(use_yolo),
         package='wb_nav2_bringup',
-        executable='yolo_detector',
+        executable='yolo_detector.py',
         name='yolo_detector',
         namespace=namespace,
         output='screen',
