@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-Mission 5: Angular Velocity Evaluation - Find the maximum reliable docking angular velocity.
+Mission 6: Reliability Evaluation with Obstacle Avoidance.
 
-Gradually increases v_angular_max and measures docking success rate at each level.
-Stops when error rate exceeds the threshold.
+Same as Mission 3 but with a static obstacle placed between the home zone
+and the pallet area. Tests Nav2 obstacle avoidance capability.
 
 Usage:
-    python3 mission_5.py [--angular-start 0.3] [--angular-end 2.0] [--angular-step 0.2] [--rounds 3] [--stop-error-rate 0.2]
+    python3 mission_6.py [--rounds N] [--pallets P1 P2 ...] [--destinations D1 D2 ...]
 
 Examples:
-    python3 mission_5.py --rounds 3
-    python3 mission_5.py --angular-start 0.3 --angular-end 2.0 --angular-step 0.2 --rounds 3 --stop-error-rate 0.2
+    python3 mission_6.py --rounds 1
+    python3 mission_6.py --rounds 15
 """
 import sys
 import os
@@ -18,7 +18,7 @@ import time
 import argparse
 import csv
 import subprocess
-import re
+import math
 from datetime import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -29,24 +29,56 @@ from pallet_mission import (
 )
 
 PALLET_ORIGINS = {
-    'P1': {'x': -10.0, 'y': -6.0,  'z': 0.01, 'yaw': 0.0},
-    'P2': {'x': -14.0, 'y': -3.0,  'z': 0.01, 'yaw': 1.5708},
-    'P3': {'x': -14.0, 'y':  0.0,  'z': 0.01, 'yaw': 1.5708},
-    'P4': {'x': -14.0, 'y':  3.0,  'z': 0.01, 'yaw': 1.5708},
-    'P5': {'x': -10.0, 'y':  6.0,  'z': 0.01, 'yaw': 0.0},
+    'P1': {'x': -10.0, 'y': -6.0,  'z': 0.05, 'yaw': 0.0},
+    'P2': {'x': -14.0, 'y': -3.0,  'z': 0.05, 'yaw': 1.5708},
+    'P3': {'x': -14.0, 'y':  0.0,  'z': 0.05, 'yaw': 1.5708},
+    'P4': {'x': -14.0, 'y':  3.0,  'z': 0.05, 'yaw': 1.5708},
+    'P5': {'x': -10.0, 'y':  6.0,  'z': 0.05, 'yaw': 0.0},
 }
 
 WORLD_NAME = 'mission_depot_v1'
+OBSTACLE_NAME = 'obstacle_1'
+OBSTACLE_X = -8.0
+OBSTACLE_Y = 0.0
+OBSTACLE_Z = 0.5
+OBSTACLE_SIZE = '0.5 0.5 1.0'
 
 
-def set_angular_velocity(v_angular):
-    print(f"Setting v_angular_max to {v_angular} rad/s...")
+def spawn_obstacle():
+    print(f"Spawning obstacle at ({OBSTACLE_X}, {OBSTACLE_Y})...")
+    req = (
+        'sdf: "<sdf version=\'1.6\'><model name=\'obstacle_1\'>'
+        '<static>true</static><link name=\'link\'>'
+        '<collision name=\'col\'><geometry><box><size>0.5 0.5 1.0</size></box></geometry></collision>'
+        '<visual name=\'vis\'><geometry><box><size>0.5 0.5 1.0</size></box></geometry>'
+        '<material><ambient>1 0.5 0 1</ambient><diffuse>1 0.5 0 1</diffuse></material></visual>'
+        '</link></model></sdf>", '
+        f'pose: {{position: {{x: {OBSTACLE_X}, y: {OBSTACLE_Y}, z: {OBSTACLE_Z}}}}}'
+    )
     subprocess.run([
-        'ros2', 'param', 'set', '/docking_server',
-        'controller.v_angular_max', str(v_angular)
+        'gz', 'service',
+        '-s', f'/world/{WORLD_NAME}/create',
+        '--reqtype', 'gz.msgs.EntityFactory',
+        '--reptype', 'gz.msgs.Boolean',
+        '--timeout', '2000',
+        '--req', req
     ], capture_output=True)
     time.sleep(1.0)
-    print(f"v_angular_max set to {v_angular} rad/s")
+    print("Obstacle spawned!")
+
+
+def remove_obstacle():
+    print("Removing obstacle...")
+    subprocess.run([
+        'gz', 'service',
+        '-s', f'/world/{WORLD_NAME}/remove',
+        '--reqtype', 'gz.msgs.Entity',
+        '--reptype', 'gz.msgs.Boolean',
+        '--timeout', '2000',
+        '--req', f'name: "{OBSTACLE_NAME}" type: 2'
+    ], capture_output=True)
+    time.sleep(1.0)
+    print("Obstacle removed!")
 
 
 def reset_all_pallets():
@@ -55,7 +87,7 @@ def reset_all_pallets():
 
 
 def reset_pallet(pallet_name):
-    import math
+    print(f"Resetting {pallet_name} to origin...")
     origin = PALLET_ORIGINS[pallet_name]
     model_name = f'pallet_{pallet_name[1]}'
     yaw = origin['yaw']
@@ -69,7 +101,8 @@ def reset_pallet(pallet_name):
         '--timeout', '2000',
         '--req', f'name: "{model_name}", position: {{x: {origin["x"]}, y: {origin["y"]}, z: {origin["z"]}}}, orientation: {{x: 0, y: 0, z: {qz:.4f}, w: {qw:.4f}}}'
     ], capture_output=True)
-    time.sleep(2.0)
+    time.sleep(1.0)
+    print(f"{pallet_name} reset done!")
 
 
 def run_mission(pallet, destination):
@@ -78,15 +111,15 @@ def run_mission(pallet, destination):
         if not dock(pallet):
             print("Docking failed, returning home...")
             lower_fork()
+            reset_all_pallets()
             go_home()
-            reset_pallet(pallet)
             return False, time.time() - start_time
         raise_fork()
         if not check_pallet_lifted(pallet):
             print("Pallet not lifted correctly, returning home...")
             lower_fork()
+            reset_all_pallets()
             go_home()
-            reset_pallet(pallet)
             return False, time.time() - start_time
         if not go_to_destination(destination):
             print("Navigation to destination failed, returning home...")
@@ -95,25 +128,25 @@ def run_mission(pallet, destination):
             go_home()
             return False, time.time() - start_time
         lower_fork()
+        reset_all_pallets()
         backup()
         go_home()
         duration = time.time() - start_time
         success = check_pallet_at_destination(pallet, destination)
         return success, duration
     except Exception as e:
-        duration = time.time() - start_time
         print(f"Mission failed with exception: {e}")
         lower_fork()
         reset_all_pallets()
         go_home()
-        return False, duration
+        return False, time.time() - start_time
 
 
-def print_report(results, stop_error_rate):
+def print_report(results):
     print("\n" + "="*55)
-    print("=== Forklift Mission 5 - Angular Velocity Evaluation ===")
+    print("=== Forklift Mission 6 - Obstacle Avoidance Evaluation ===")
     print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    print(f"Stop condition: error rate > {stop_error_rate*100:.0f}%")
+    print(f"Obstacle: {OBSTACLE_SIZE}m box at ({OBSTACLE_X}, {OBSTACLE_Y})")
     print("="*55)
 
     total = len(results)
@@ -122,22 +155,6 @@ def print_report(results, stop_error_rate):
     print(f"Total attempts: {total}")
     print(f"Total successes: {successes}")
     print(f"Overall success rate: {successes/total*100:.1f}%")
-
-    print(f"\n--- By Angular Velocity ---")
-    angulars = sorted(set(r['v_angular_max'] for r in results))
-    max_reliable = None
-    for v in angulars:
-        vr = [r for r in results if r['v_angular_max'] == v]
-        vs = sum(1 for r in vr if r['success'])
-        avg = sum(r['duration_sec'] for r in vr) / len(vr)
-        rate = vs / len(vr)
-        stopped = " ← stopped here" if rate <= (1 - stop_error_rate) else ""
-        print(f"v_angular_max {v} rad/s: {vs}/{len(vr)} ({rate*100:.1f}%) avg time: {avg:.1f}s{stopped}")
-        if rate >= (1 - stop_error_rate):
-            max_reliable = v
-
-    print(f"\n--- Critical Angular Velocity ---")
-    print(f"Max reliable v_angular_max: {max_reliable} rad/s (success rate > {(1-stop_error_rate)*100:.0f}%)")
 
     print(f"\n--- By Pallet ---")
     for p in sorted(set(r['pallet'] for r in results)):
@@ -161,22 +178,12 @@ def print_report(results, stop_error_rate):
         avg = sum(r['duration_sec'] for r in cr) / len(cr)
         print(f"{p}→{d}: {cs}/{len(cr)} ({cs/len(cr)*100:.1f}%) avg time: {avg:.1f}s")
 
-    print(f"\n--- By Angular Velocity + Pallet ---")
-    for v in angulars:
-        row = f"v_angular {v} |"
-        for p in sorted(set(r['pallet'] for r in results)):
-            pr = [r for r in results if r['v_angular_max'] == v and r['pallet'] == p]
-            if pr:
-                ps = sum(1 for r in pr if r['success'])
-                row += f" {p}: {ps}/{len(pr)}"
-        print(row)
-
 
 def save_csv(results):
-    filename = f"mission_5_results_{datetime.now().strftime('%Y-%m-%d_%H-%M')}.csv"
+    filename = f"mission_6_results_{datetime.now().strftime('%Y-%m-%d_%H-%M')}.csv"
     filepath = os.path.join(os.path.expanduser('~'), filename)
     with open(filepath, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['timestamp', 'v_angular_max', 'pallet', 'destination', 'success', 'duration_sec'])
+        writer = csv.DictWriter(f, fieldnames=['timestamp', 'pallet', 'destination', 'success', 'duration_sec'])
         writer.writeheader()
         writer.writerows(results)
     print(f"\nRaw data saved to: {filepath}")
@@ -185,72 +192,71 @@ def save_csv(results):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--angular-start', type=float, default=0.3)
-    parser.add_argument('--angular-end', type=float, default=2.0)
-    parser.add_argument('--angular-step', type=float, default=0.2)
-    parser.add_argument('--rounds', type=int, default=3)
-    parser.add_argument('--stop-error-rate', type=float, default=0.2)
+    parser.add_argument('--rounds', type=int, default=1)
+    parser.add_argument('--pallets', nargs='+', default=list(PALLETS.keys()))
+    parser.add_argument('--destinations', nargs='+', default=list(DESTINATIONS.keys()))
+    parser.add_argument('--obstacle-x', type=float, default=None)
+    parser.add_argument('--obstacle-y', type=float, default=None)
     args = parser.parse_args()
 
-    pallets = list(PALLETS.keys())
-    destinations = list(DESTINATIONS.keys())
+    pallets = [p.upper() for p in args.pallets]
+    destinations = [d.upper() for d in args.destinations]
     combos = [(p, d) for p in pallets for d in destinations]
+    total = len(combos) * args.rounds
 
-    angulars = []
-    v = args.angular_start
-    while v <= args.angular_end + 0.001:
-        angulars.append(round(v, 2))
-        v += args.angular_step
+    if args.obstacle_x is not None:
+        global OBSTACLE_X
+        OBSTACLE_X = args.obstacle_x
+    if args.obstacle_y is not None:
+        global OBSTACLE_Y
+        OBSTACLE_Y = args.obstacle_y
 
-    print(f"=== Mission 5: Angular Velocity Evaluation ===")
-    print(f"v_angular_max range: {angulars}")
-    print(f"Rounds per angular velocity: {args.rounds}")
-    print(f"Stop condition: error rate > {args.stop_error_rate*100:.0f}%")
+    no_obstacle = (args.obstacle_x is None and args.obstacle_y is None)
+
+    print(f"=== Mission 6: Obstacle Avoidance Evaluation ===")
+    print(f"Pallets: {pallets}")
+    print(f"Destinations: {destinations}")
+    print(f"Rounds: {args.rounds}")
+    print(f"Total attempts: {total}")
+    if no_obstacle:
+        print(f"Obstacle: none")
+    else:
+        print(f"Obstacle: {OBSTACLE_SIZE}m box at ({OBSTACLE_X}, {OBSTACLE_Y})")
 
     init()
+    if not no_obstacle:
+        spawn_obstacle()
 
     results = []
+    attempt = 0
 
-    for v_angular in angulars:
-        set_angular_velocity(v_angular)
-        print(f"\n{'='*55}")
-        print(f"Testing v_angular_max: {v_angular} rad/s")
-
-        angular_results = []
+    try:
         for round_num in range(1, args.rounds + 1):
-            print(f"\n  Round {round_num}/{args.rounds}")
+            print(f"\n{'='*55}")
+            print(f"Round {round_num}/{args.rounds}")
             for pallet, destination in combos:
-                print(f"  {pallet} → {destination}")
+                attempt += 1
+                print(f"\n[{attempt}/{total}] {pallet} → {destination}")
                 success, duration = run_mission(pallet, destination)
-                result = {
+                results.append({
                     'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    'v_angular_max': v_angular,
                     'pallet': pallet,
                     'destination': destination,
                     'success': success,
                     'duration_sec': round(duration, 1)
-                }
-                results.append(result)
-                angular_results.append(result)
-                print(f"  Result: {'SUCCESS' if success else 'FAILED'} ({duration:.1f}s)")
+                })
+                print(f"Result: {'SUCCESS' if success else 'FAILED'} ({duration:.1f}s)")
                 reset_all_pallets()
-                time.sleep(2.0)
+                time.sleep(3.0)
                 if is_robot_out_of_bounds():
                     print("Robot is out of map bounds! Aborting all missions.")
                     raise SystemExit(1)
+    finally:
+        if not no_obstacle:
+            remove_obstacle()
 
-        error_rate = 1 - sum(1 for r in angular_results if r['success']) / len(angular_results)
-        print(f"\nv_angular_max {v_angular} rad/s error rate: {error_rate*100:.1f}%")
-        if error_rate > args.stop_error_rate:
-            print(f"Error rate exceeded {args.stop_error_rate*100:.0f}% — stopping!")
-            break
-
-    print_report(results, args.stop_error_rate)
+    print_report(results)
     save_csv(results)
-
-    # Restore original angular velocity
-    set_angular_velocity(0.3)
-    print("v_angular_max restored to 0.3 rad/s")
     shutdown()
 
 

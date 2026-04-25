@@ -24,7 +24,8 @@ from datetime import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pallet_mission import (
     init, go_to, go_to_destination, dock, raise_fork, lower_fork,
-    backup, go_home, shutdown, check_pallet_at_destination, PALLETS, DESTINATIONS
+    backup, go_home, shutdown, check_pallet_at_destination, PALLETS, DESTINATIONS,
+    is_robot_out_of_bounds, check_pallet_lifted
 )
 
 PARAMS_FILE = os.path.expanduser('~/ros2_ws/src/wb_nav2_bringup/params/forklift_nav2_params.yaml')
@@ -56,6 +57,11 @@ def set_speed(speed):
     print(f"Speed set to {speed} m/s")
 
 
+def reset_all_pallets():
+    for pallet_name in PALLET_ORIGINS:
+        reset_pallet(pallet_name)
+
+
 def reset_pallet(pallet_name):
     import math
     origin = PALLET_ORIGINS[pallet_name]
@@ -79,11 +85,20 @@ def run_mission(pallet, destination):
     try:
         if not dock(pallet):
             print("Docking failed, returning home...")
+            lower_fork()
             go_home()
+            reset_pallet(pallet)
             return False, time.time() - start_time
         raise_fork()
+        if not check_pallet_lifted(pallet):
+            print("Pallet not lifted correctly, returning home...")
+            lower_fork()
+            go_home()
+            reset_pallet(pallet)
+            return False, time.time() - start_time
         go_to_destination(destination)
         lower_fork()
+        reset_all_pallets()
         backup()
         go_home()
         duration = time.time() - start_time
@@ -92,6 +107,9 @@ def run_mission(pallet, destination):
     except Exception as e:
         duration = time.time() - start_time
         print(f"Mission failed with exception: {e}")
+        lower_fork()
+        reset_all_pallets()
+        go_home()
         return False, duration
 
 
@@ -193,6 +211,7 @@ def main():
     print(f"Stop condition: error rate > {args.stop_error_rate*100:.0f}%")
 
     init()
+
     results = []
 
     for speed in speeds:
@@ -217,8 +236,11 @@ def main():
                 results.append(result)
                 speed_results.append(result)
                 print(f"  Result: {'SUCCESS' if success else 'FAILED'} ({duration:.1f}s)")
-                reset_pallet(pallet)
+                reset_all_pallets()
                 time.sleep(2.0)
+                if is_robot_out_of_bounds():
+                    print("Robot is out of map bounds! Aborting all missions.")
+                    raise SystemExit(1)
 
         # Check error rate for this speed
         error_rate = 1 - sum(1 for r in speed_results if r['success']) / len(speed_results)

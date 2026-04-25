@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import time
+import subprocess
 import rclpy
 from rclpy.parameter import Parameter
 from rclpy.duration import Duration
@@ -57,6 +58,9 @@ def init():
     time.sleep(10)
     navigator.waitUntilNav2Active()
     print("Nav2 ready!")
+    print("Initializing fork position...")
+    lower_fork()
+    print("Fork initialized!")
 
 def wait_for_task(timeout=60.0):
     i = 0
@@ -128,19 +132,40 @@ def lower_fork(duration=5.0):
 def dock(pallet_name):
     dock_id = PALLETS[pallet_name]
     print(f"Docking to {pallet_name} ({dock_id})...")
+    # Lower inflation_radius for docking approach
+    subprocess.run(['ros2', 'param', 'set', '/global_costmap/global_costmap', 'inflation_layer.inflation_radius', '0.05'], capture_output=True)
+    time.sleep(2.0)
     navigator.dockRobotByID(dock_id)
     time.sleep(1.0)
     success = wait_for_task(timeout=120.0)
+    # Restore inflation_radius after docking
+    subprocess.run(['ros2', 'param', 'set', '/global_costmap/global_costmap', 'inflation_layer.inflation_radius', '0.7'], capture_output=True)
+    time.sleep(0.5)
     if success:
         print(f"Docking complete!")
     else:
         print(f"Docking failed!")
     return success
 
+def send_linear_x_vel(velocity: float):
+    global vel_publisher
+    twist = Twist()
+    twist.linear.x = velocity
+    vel_publisher.publish(twist)
+
 def backup(distance=1.5, speed=0.5):
     print(f"Backing up {distance}m...")
     navigator.backup(backup_dist=distance, backup_speed=speed, time_allowance=20)
     wait_for_task()
+    status = navigator.getResult()
+    time.sleep(0.5)
+    if status == TaskResult.FAILED:
+        print("Stuck! Trying emergency backup...")
+        send_linear_x_vel(-1.0)
+        time.sleep(2.0)
+        send_linear_x_vel(0.0)
+        time.sleep(0.5)
+        print("Emergency backup complete.")
     print("Backup complete!")
 
 def go_to(x, y, oz=0.0, ow=1.0):
@@ -188,6 +213,46 @@ def spin():
 
 def shutdown():
     rclpy.shutdown()
+
+# Map bounds: x [-15.1, 14.9], y [-7.835, 7.515]
+MAP_BOUNDS = {'x_min': -15.1, 'x_max': 14.9, 'y_min': -7.835, 'y_max': 7.515}
+
+def is_robot_out_of_bounds():
+    """Returns True if robot is outside map bounds."""
+    import subprocess, re
+    result = subprocess.run(
+        ['gz', 'topic', '-e', '-n', '1', '-t', '/world/mission_depot_v1/pose/info'],
+        capture_output=True, text=True, timeout=5
+    )
+    pattern = r'name: "RX20_16".*?position {.*?x: ([-\d.]+).*?y: ([-\d.]+)'
+    match = re.search(pattern, result.stdout, re.DOTALL)
+    if not match:
+        print("Robot not found in Gazebo!")
+        return True
+    rx, ry = float(match.group(1)), float(match.group(2))
+    out = (rx < MAP_BOUNDS['x_min'] or rx > MAP_BOUNDS['x_max'] or
+           ry < MAP_BOUNDS['y_min'] or ry > MAP_BOUNDS['y_max'])
+    if out:
+        print(f"Robot out of bounds! Position: ({rx:.2f}, {ry:.2f})")
+    return out
+
+def check_pallet_lifted(pallet_name, min_height=0.15):
+    """Check if pallet is actually lifted by checking its z position."""
+    import subprocess, re
+    pallet_model = f'pallet_{pallet_name[1]}'
+    result = subprocess.run(
+        ['gz', 'topic', '-e', '-n', '1', '-t', '/world/mission_depot_v1/pose/info'],
+        capture_output=True, text=True, timeout=5
+    )
+    pattern = rf'name: "{pallet_model}".*?position {{.*?x: ([-\d.]+).*?y: ([-\d.]+).*?z: ([-\d.]+)'
+    match = re.search(pattern, result.stdout, re.DOTALL)
+    if not match:
+        print(f"Could not find {pallet_model} position")
+        return False
+    pz = float(match.group(3))
+    print(f"{pallet_model} z position: {pz:.3f}m (min: {min_height}m)")
+    return pz >= min_height
+
 
 def check_pallet_at_destination(pallet_name, dest_name, radius=2.0):
     """Check if pallet is within radius of destination using gz topic."""

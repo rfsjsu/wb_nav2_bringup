@@ -22,7 +22,8 @@ from datetime import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pallet_mission import (
     init, go_to, go_to_destination, dock, raise_fork, lower_fork,
-    backup, go_home, shutdown, check_pallet_at_destination, PALLETS, DESTINATIONS
+    backup, go_home, shutdown, check_pallet_at_destination, PALLETS, DESTINATIONS,
+    is_robot_out_of_bounds, check_pallet_lifted
 )
 
 # Original pallet positions for reset
@@ -35,6 +36,11 @@ PALLET_ORIGINS = {
 }
 
 WORLD_NAME = 'mission_depot_v1'
+
+
+def reset_all_pallets():
+    for pallet_name in PALLET_ORIGINS:
+        reset_pallet(pallet_name)
 
 
 def reset_pallet(pallet_name):
@@ -64,12 +70,18 @@ def run_mission(pallet, destination):
         print(f"\n--- Docking to {pallet} ---")
         if not dock(pallet):
             print("Docking failed, returning home...")
+            lower_fork()
             go_home()
+            reset_pallet(pallet)
             return False, time.time() - start_time
 
-        print(f"--- Raising fork ---")
         raise_fork()
-
+        if not check_pallet_lifted(pallet):
+            print("Pallet not lifted correctly, returning home...")
+            lower_fork()
+            go_home()
+            reset_pallet(pallet)
+            return False, time.time() - start_time
         print(f"--- Navigating to {destination} ---")
         go_to_destination(destination)
 
@@ -89,6 +101,9 @@ def run_mission(pallet, destination):
     except Exception as e:
         duration = time.time() - start_time
         print(f"Mission failed with exception: {e}")
+        lower_fork()
+        go_home()
+        reset_pallet(pallet)
         return False, duration
 
 
@@ -185,8 +200,11 @@ def main():
                 'duration_sec': round(duration, 1)
             })
             print(f"Result: {'SUCCESS' if success else 'FAILED'} ({duration:.1f}s)")
-            reset_pallet(pallet)
+            reset_all_pallets()
             time.sleep(2.0)
+            if is_robot_out_of_bounds():
+                print("Robot is out of map bounds! Aborting all missions.")
+                raise SystemExit(1)
 
     print_report(results)
     save_csv(results)
