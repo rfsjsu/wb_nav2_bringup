@@ -15,8 +15,8 @@ class YOLODetectorNode(Node):
         # Parameters
         self.declare_parameter('model', 'yoloe-26l-seg.pt') # Can change the model to (yolov8n, yolov8m, yolov8l)
         self.declare_parameter('device', 'cuda:0')
-        self.declare_parameter('confidence_threshold', 0.70)
-        self.declare_parameter('iou_threshold', 0.50)
+        self.declare_parameter('confidence_threshold', 0.75)
+        self.declare_parameter('iou_threshold', 0.5)
         
         model_name = self.get_parameter('model').value
         device = self.get_parameter('device').value

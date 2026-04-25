@@ -20,6 +20,15 @@ from forklift_help import get_help
 from forklift_llm import get_llm
 from forklift_prompts import get_prompts
 
+import base64
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+import cv2
+import threading
+
+bridge = CvBridge()
+latest_image = None # Global to store latest frame
+
 node = None
 vel_publisher = None
 vel_subscriber = None
@@ -27,7 +36,14 @@ explore_publisher = None
 navigate_to_pose_action_client = None
 dock_action_client = None
 
+def spin_thread(node):
+    while rclpy.ok():
+        rclpy.spin_once(node, timeout_sec=0.1)
 
+def image_callback(msg):
+    global latest_image
+    latest_image = msg
+    
 def execute_ros_command(command: str) -> Tuple[bool, str]:
     """
     Execute a ROS2 command.
@@ -62,16 +78,69 @@ def _get_maps_dir() -> str:
 
 # Hardcoded locations on the map
 LOCATIONS = {
-    "home": {
+    "Home": {
         "position": {"x": -2.0, "y": 0.0, "z": 0.0},
-        "orientation": {
-            "x": 0.0,
-            "y": 0.0,
-            "z": 0.0,
-            "w": 0.0,
-        },
+        "orientation": {"x": 0.0, "y": 0.0, "z": 0.9999, "w": 0.0016},
+    },
+    "P1": {
+        "position": {"x": -10.0, "y": -4.0, "z": 0.0},
+        "orientation": {"x": 0.0, "y": 0.0, "z": -0.7071, "w": 0.7071},
+    },
+    "P2": {
+        "position": {"x": -12.0, "y": -3.0, "z": 0.0},
+        "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": -1.0},
+    },
+    "P3": {
+        "position": {"x": -12.0, "y": 0.0, "z": 0.0},
+        "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": -1.0},
+    },
+    "P4": {
+        "position": {"x": -12.0, "y": 3.0, "z": 0.0},
+        "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": -1.0},
+    },
+    "P5": {
+        "position": {"x": -10.0, "y": 8.0, "z": 0.0},
+        "orientation": {"x": 0.0, "y": 0.0, "z": -0.7071, "w": -0.7071},
+    },
+    "D1": {
+        "position": {"x": -5.0, "y": -5.5, "z": 0.0},
+        "orientation": {"x": 0.0, "y": 0.0, "z": -0.7071, "w": 0.7071},
+    },
+    "D2": {
+        "position": {"x": -5.0, "y": 5.5, "z": 0.0},
+        "orientation": {"x": 0.0, "y": 0.0, "z": 0.7071, "w": -0.7071},
     },
 }
+
+@tool
+def describe_scene() -> str:
+    """
+    Captures a single image from the camera and describes what is visable.
+    Call this tool once per request. Do not call it multiple times.
+    """
+    
+    global latest_image
+    if latest_image is None:
+        return "No camera image available"
+    
+    # Convert ROS image to OpenCV, then base64
+    cv_image = bridge.imgmsg_to_cv2(latest_image, "bgr8")
+    _, buffer = cv2.imencode(".jpeg", cv_image)
+    image_64 = base64.b64encode(buffer).decode("utf-8")
+
+    from langchain_ollama import ChatOllama
+    from langchain_core.messages import HumanMessage
+
+    vission_llm = ChatOllama(model="llama3.2-vision")
+    message = HumanMessage(
+        content=[
+            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_64}"}},
+            {"type": "text", "text": "Describe the scene and focus on common warehouse objects and safety concerns."},
+            ]
+    )
+    response = vission_llm.invoke([message])
+    print(response)
+    return response.content
 
 @tool
 def get_velocity() -> str:
@@ -311,7 +380,7 @@ def navigate_to_location_by_name(location_name: str) -> str:
     :param location_name: The name of the location to navigate to (e.g., 'kitchen', 'gym').
     """
     global navigate_to_pose_action_client, node
-    location_name_lower = location_name.lower()
+    location_name_lower = location_name.upper()
     if location_name_lower not in LOCATIONS:
         return f"Location '{location_name}' not found. Available locations are: {', '.join(LOCATIONS.keys())}"
 
@@ -339,9 +408,12 @@ def main():
     rclpy.init()
     sim_time_param = Parameter("use_sim_time", rclpy.Parameter.Type.BOOL, True)
     node = rclpy.create_node("rosa_forklift_node", parameter_overrides=[sim_time_param])
+    spinner = threading.Thread(target=spin_thread, args=(node,), daemon=True)
+    spinner.start()
 
     vel_publisher = node.create_publisher(Twist, "/cmd_vel", 10)
     explore_publisher = node.create_publisher(Bool, "/explore/resume", 10)
+    image_subscriber = node.create_subscription(Image, "/yolo/detections_image", image_callback, 1) # 1 keeps the last frame in queue
     navigate_to_pose_action_client = ActionClient( node, NavigateToPose, "/navigate_to_pose")
     dock_action_client = ActionClient(node, DockRobot, "/dock_robot")
 
@@ -365,9 +437,10 @@ def main():
             get_location_names,
             navigate_to_location_by_name,
             dock_to_pallet,
+            describe_scene,
         ],
         prompts=prompt,
-        verbose=False,
+        verbose=True,
     )
 
     print("Type 'exit' or 'quit' to end the program")

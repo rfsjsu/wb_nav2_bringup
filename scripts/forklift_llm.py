@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_ollama import ChatOllama
 
-llm_vendor = "Ollama"
+llm_vendor = "Anthropic"
 
 def get_llm(streaming: bool = False):
     """A helper function to get the LLM instance."""

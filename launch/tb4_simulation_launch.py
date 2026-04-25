@@ -194,7 +194,7 @@ def generate_launch_description():
     
     declare_yolo_model_cmd = DeclareLaunchArgument(
         'yolo_model',
-        default_value='yolov8m-world.pt',
+        default_value='yoloe-26l-seg.pt',
         description='YOLO model to use'
     )
 
