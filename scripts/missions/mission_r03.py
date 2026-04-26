@@ -21,7 +21,7 @@ from datetime import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pallet_mission import (
-    init, go_to, go_to_destination, dock, raise_fork, lower_fork, fork_up, fork_down, set_gz_view,
+    init, go_to, go_to_destination, dock, raise_fork, lower_fork,
     backup, go_home, shutdown, check_pallet_at_destination, PALLETS, DESTINATIONS
 )
 
@@ -30,11 +30,11 @@ PALLET_ORIGINS = {
     'P1': {'x': -10.0, 'y': -6.0,  'z': 0.01, 'yaw': 0.0},
     'P2': {'x': -14.0, 'y': -3.0,  'z': 0.01, 'yaw': 1.5708},
     'P3': {'x': -14.0, 'y':  0.0,  'z': 0.01, 'yaw': 1.5708},
-    'P4': {'x': -14.0, 'y':  3.0,  'z': 0.01, 'yaw': 1.5708},
+    'P4': {'x': -10.0, 'y':  6.0,  'z': 0.01, 'yaw': 0.0},
     'P5': {'x': -10.0, 'y':  6.0,  'z': 0.01, 'yaw': 0.0},
 }
 
-WORLD_NAME = 'mission_depot_v2'
+WORLD_NAME = 'mission_depot_v1'
 
 
 def reset_pallet(pallet_name):
@@ -65,13 +65,13 @@ def run_mission(pallet, destination):
         dock(pallet)
 
         print(f"--- Raising fork ---")
-        fork_up() #raise_fork()
+        raise_fork()
 
         print(f"--- Navigating to {destination} ---")
         go_to_destination(destination)
 
         print(f"--- Lowering fork ---")
-        fork_down() #lower_fork()
+        lower_fork()
 
         print(f"--- Backing up ---")
         backup()
@@ -162,7 +162,6 @@ def main():
     print(f"Rounds: {args.rounds}")
     print(f"Total attempts: {total}")
 
-    set_gz_view()
     init()
 
     results = []

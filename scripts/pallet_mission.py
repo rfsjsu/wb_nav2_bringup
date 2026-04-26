@@ -47,18 +47,27 @@ DESTINATIONS = {
     'NONE': None,
 }
 
-def init():
+def init(existing_node=None, existing_vel_publisher=None, existing_fork_publisher=None, existing_navigator=None):
     global node, vel_publisher, fork_publisher, navigator
-    rclpy.init()
-    sim_time_param = Parameter("use_sim_time", rclpy.Parameter.Type.BOOL, True)
-    node = rclpy.create_node("pallet_mission_node", parameter_overrides=[sim_time_param])
-    vel_publisher = node.create_publisher(Twist, "/cmd_vel", 10)
-    fork_publisher = node.create_publisher(Float64MultiArray, "/velocity_control/commands", 10)
-    navigator = BasicNavigator()
-    print("Waiting for Nav2...")
-    time.sleep(10)
-    navigator.waitUntilNav2Active()
-    print("Nav2 ready!")
+
+    if existing_node is not None:
+        # Use existing ROS node and publisher instead of creating a new one
+        node = existing_node
+        vel_publisher = existing_vel_publisher
+        fork_publisher = existing_fork_publisher
+        navigator = existing_navigator
+    
+    else:
+        rclpy.init()
+        sim_time_param = Parameter("use_sim_time", rclpy.Parameter.Type.BOOL, True)
+        node = rclpy.create_node("pallet_mission_node", parameter_overrides=[sim_time_param])
+        vel_publisher = node.create_publisher(Twist, "/cmd_vel", 10)
+        fork_publisher = node.create_publisher(Float64MultiArray, "/velocity_control/commands", 10)
+        time.sleep(10)
+        navigator = BasicNavigator()
+        print("Waiting for Nav2...")
+        navigator.waitUntilNav2Active()
+        print("Nav2 ready!")
 
 def set_gz_view():
     '''
@@ -130,7 +139,6 @@ def raise_fork(duration=4.0):
     fork_publisher.publish(msg)
     time.sleep(1.0)
     print("Fork raised!")
-    input("Press ENTER to continue")
 
 def lower_fork(duration=5.0):
     print("Lowering fork...")
@@ -143,7 +151,6 @@ def lower_fork(duration=5.0):
     fork_publisher.publish(msg)
     time.sleep(1.0)
     print("Fork lowered!")
-    input("Press ENTER to continue")
 
 def dock(pallet_name, timeout=120.0, debug=False):
     dock_id = PALLETS[pallet_name]

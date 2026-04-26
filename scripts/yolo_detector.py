@@ -54,6 +54,12 @@ class YOLODetectorNode(Node):
             # Equipment
             "manual pallet jack in warehouse",
             "yellow pallet jack",
+
+            # General items
+            "person",
+            "cylinder",
+            "cube",
+            "sphere",
         ])
 
         self.get_logger().info(f'Target classes: {self.model.set_classes}')        

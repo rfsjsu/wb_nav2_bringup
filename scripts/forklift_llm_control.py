@@ -19,6 +19,12 @@ from rclpy.parameter import Parameter
 from forklift_help import get_help
 from forklift_llm import get_llm
 from forklift_prompts import get_prompts
+from pallet_mission import (
+    init, go_to_destination, dock, raise_fork, lower_fork,
+    backup, go_home, shutdown, check_pallet_at_destination, PALLETS, DESTINATIONS
+)
+from std_msgs.msg import Bool, String, Float64MultiArray
+from nav2_simple_commander.robot_navigator import BasicNavigator
 
 import base64
 from sensor_msgs.msg import Image
@@ -35,6 +41,8 @@ vel_subscriber = None
 explore_publisher = None
 navigate_to_pose_action_client = None
 dock_action_client = None
+fork_publisher = None
+navigator = None
 
 def spin_thread(node):
     while rclpy.ok():
@@ -75,42 +83,42 @@ def _get_maps_dir() -> str:
     pathlib.Path(maps_dir).mkdir(parents=True, exist_ok=True)
     return maps_dir
 
+@tool
+def pallet_mission(pallet: str, destination: str) -> str:
+    """
+    THIS IS THE ONLY TOOL TO USE for pallet pickup and delivery missions.
+    Do NOT use dock_to_pallet or navigate tools separately for this.
+    Available pallets: P1, P2, P3, P4, P5
+    Available destinations: D1, D2
 
-# Hardcoded locations on the map
-LOCATIONS = {
-    "Home": {
-        "position": {"x": -2.0, "y": 0.0, "z": 0.0},
-        "orientation": {"x": 0.0, "y": 0.0, "z": 0.9999, "w": 0.0016},
-    },
-    "P1": {
-        "position": {"x": -10.0, "y": -4.0, "z": 0.0},
-        "orientation": {"x": 0.0, "y": 0.0, "z": -0.7071, "w": 0.7071},
-    },
-    "P2": {
-        "position": {"x": -12.0, "y": -3.0, "z": 0.0},
-        "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": -1.0},
-    },
-    "P3": {
-        "position": {"x": -12.0, "y": 0.0, "z": 0.0},
-        "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": -1.0},
-    },
-    "P4": {
-        "position": {"x": -12.0, "y": 3.0, "z": 0.0},
-        "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": -1.0},
-    },
-    "P5": {
-        "position": {"x": -10.0, "y": 8.0, "z": 0.0},
-        "orientation": {"x": 0.0, "y": 0.0, "z": -0.7071, "w": -0.7071},
-    },
-    "D1": {
-        "position": {"x": -5.0, "y": -5.5, "z": 0.0},
-        "orientation": {"x": 0.0, "y": 0.0, "z": -0.7071, "w": 0.7071},
-    },
-    "D2": {
-        "position": {"x": -5.0, "y": 5.5, "z": 0.0},
-        "orientation": {"x": 0.0, "y": 0.0, "z": 0.7071, "w": -0.7071},
-    },
-}
+    :param pallet: Pallet name e.g. 'P1', 'P2'
+    :param destination: Destination name e.g. 'D1', 'D2'
+    """
+    global node, vel_publisher, fork_publisher, navigator
+
+    pallet_upper = pallet.upper()
+    destination_upper = destination.upper()
+
+    if pallet_upper not in PALLETS:
+        return f"Invalid pallet... Choose from: {', '.join(PALLETS.keys())}"
+    if destination_upper not in DESTINATIONS:
+        return f"Invalid destination... Choose from: {', '.join(DESTINATIONS.keys())}"
+    init(
+        existing_node=node,
+        existing_vel_publisher=vel_publisher,
+        existing_fork_publisher=fork_publisher,
+        existing_navigator=navigator
+    )
+    lower_fork()
+    go_home()
+    dock(pallet_upper)
+    raise_fork()
+    backup()
+    go_to_destination(destination_upper)
+    lower_fork()
+    backup()
+    go_home()
+    return f"Mission complete... Delivred {pallet_upper} to destination {destination_upper}..."
 
 @tool
 def describe_scene() -> str:
@@ -369,7 +377,7 @@ def get_location_names() -> str:
     """
     Returns a list of available location names.
     """
-    return f"Available locations: {', '.join(LOCATIONS.keys())}"
+    return f"Available locations: {', '.join(DESTINATIONS.keys())}"
 
 
 @tool
@@ -380,40 +388,42 @@ def navigate_to_location_by_name(location_name: str) -> str:
     :param location_name: The name of the location to navigate to (e.g., 'kitchen', 'gym').
     """
     global navigate_to_pose_action_client, node
-    location_name_lower = location_name.upper()
-    if location_name_lower not in LOCATIONS:
-        return f"Location '{location_name}' not found. Available locations are: {', '.join(LOCATIONS.keys())}"
+    location_name_upper = location_name.upper()
 
-    loc_data = LOCATIONS[location_name_lower]
-    pos = loc_data["position"]
-    orient = loc_data["orientation"]
+    if location_name_upper not in DESTINATIONS:
+        return f"Location '{location_name}' not found. Available: {', '.join(DESTINATIONS.keys())}"
 
+    dest = DESTINATIONS[location_name_upper]
     goal_msg = NavigateToPose.Goal()
     goal_msg.pose.header.frame_id = "map"
     goal_msg.pose.header.stamp = node.get_clock().now().to_msg()
-    goal_msg.pose.pose.position.x = pos["x"]
-    goal_msg.pose.pose.position.y = pos["y"]
-    goal_msg.pose.pose.orientation.z = orient["z"]
-    goal_msg.pose.pose.orientation.w = orient["w"]
+    goal_msg.pose.pose.position.x = dest['x']
+    goal_msg.pose.pose.position.y = dest['y']
+    goal_msg.pose.pose.orientation.z = dest['oz']
+    goal_msg.pose.pose.orientation.w = dest['ow']
 
     navigate_to_pose_action_client.send_goal_async(goal_msg)
-    return f"Navigation goal sent to location '{location_name}'. Position: {pos}, Orientation: {orient}."
+    return f"Navigation goal sent to {location_name_upper}."
 
 def main():
-    global node, vel_publisher, explore_publisher
-    global navigate_to_pose_action_client, dock_action_client
+    global node, vel_publisher, explore_publisher, navigator
+    global navigate_to_pose_action_client, dock_action_client, fork_publisher
     print("Hi from ROSA forklift.")
 
     # init rclpy
     rclpy.init()
     sim_time_param = Parameter("use_sim_time", rclpy.Parameter.Type.BOOL, True)
     node = rclpy.create_node("rosa_forklift_node", parameter_overrides=[sim_time_param])
-    spinner = threading.Thread(target=spin_thread, args=(node,), daemon=True)
-    spinner.start()
+    # spinner = threading.Thread(target=spin_thread, args=(node,), daemon=True)
+    # spinner.start()    
+    navigator = BasicNavigator(node_name='basic_navigator')
+    navigator.waitUntilNav2Active()
+    
 
     vel_publisher = node.create_publisher(Twist, "/cmd_vel", 10)
     explore_publisher = node.create_publisher(Bool, "/explore/resume", 10)
     image_subscriber = node.create_subscription(Image, "/yolo/detections_image", image_callback, 1) # 1 keeps the last frame in queue
+    fork_publisher = node.create_publisher(Float64MultiArray, "/velocity_control/commands", 10)
     navigate_to_pose_action_client = ActionClient( node, NavigateToPose, "/navigate_to_pose")
     dock_action_client = ActionClient(node, DockRobot, "/dock_robot")
 
@@ -438,6 +448,7 @@ def main():
             navigate_to_location_by_name,
             dock_to_pallet,
             describe_scene,
+            pallet_mission,
         ],
         prompts=prompt,
         verbose=True,
