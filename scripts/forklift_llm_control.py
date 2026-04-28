@@ -12,6 +12,7 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool, String
 from nav2_msgs.action import NavigateToPose, DockRobot
 import rclpy
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.duration import Duration
 from rclpy.action import ActionClient
 from rclpy.parameter import Parameter
@@ -45,8 +46,9 @@ fork_publisher = None
 navigator = None
 
 def spin_thread(node):
-    while rclpy.ok():
-        rclpy.spin_once(node, timeout_sec=0.1)
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+    executor.spin()
 
 def image_callback(msg):
     global latest_image
@@ -414,8 +416,8 @@ def main():
     rclpy.init()
     sim_time_param = Parameter("use_sim_time", rclpy.Parameter.Type.BOOL, True)
     node = rclpy.create_node("rosa_forklift_node", parameter_overrides=[sim_time_param])
-    # spinner = threading.Thread(target=spin_thread, args=(node,), daemon=True)
-    # spinner.start()    
+    spinner = threading.Thread(target=spin_thread, args=(node,), daemon=True)
+    spinner.start()    
     navigator = BasicNavigator(node_name='basic_navigator')
     navigator.waitUntilNav2Active()
     
