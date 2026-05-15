@@ -63,7 +63,8 @@ Enter your request: "
 Enter a valid node requests.
 EX: Describe the scene
     Dock with P1 and deliver to D2
-The model is capable of running multiple tool calls in one command:
+
+Multi-step command (the model supports chaining multiple tool calls in one request):
 EX: Describe the scene, then dock with P1 and deliver to D2.
 
 Note: Computer vision (YOLO object detection) is automatically initialized
