@@ -53,13 +53,14 @@ source install/setup.bash
 python3 src/wb_nav2_bringup/scripts/forklift_llm_control.py
 
 If everything initialized correctly, the following should appear in terminal:
-"Hi from ROSA forklift.
+Hi from ROSA forklift.
 [INFO] [1778815556.775681575] [basic_navigator]: amcl/get_state service not available, waiting...
 [INFO] [1778815561.290017123] [basic_navigator]: Nav2 is ready for use!
 Using Anthropic
 Type 'exit' or 'quit' to end the program
 
-Enter your request: "
+Enter your request:
+
 Enter a valid node requests.
 EX: Describe the scene
     Dock with P1 and deliver to D2
