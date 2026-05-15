@@ -43,7 +43,7 @@ bash ./src/wb_nav2_bringup/scripts/rx20_16.launch.sh
 ```
 To run forklift_llm_control:
 ```
-**Before running, ensure your `.env` file contains valid API credentials (Tested with Anthrpoic:**
+**Before running, ensure your .env file contains valid API credentials (Tested with Anthrpoic):**
 ANTHROPIC_API_KEY=your_key_here
 ANTHROPIC_MODEL=claude-haiku-4-5-20251001
 
