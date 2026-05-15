@@ -25,6 +25,9 @@ mkdir -p ~/ros2_ws/src
 cd ~/ros2_ws/src
 git clone -b RX20_16_Forklift https://github.com/rfsjsu/wb_nav2_bringup.git
 git clone -b jazzy https://github.com/pradyum/dual_laser_merger.git
+sudo apt install -y ros-jazzy-apriltag-ros
+sudo apt install -y ros-jazzy-image-proc
+python3 -m pip install jpl-rosa langchain-ollama langchain-anthropic langchain-openai python-dotenv langchain --break-system-packages
 cd ~/ros2_ws
 source /opt/ros/jazzy/setup.bash
 rosdep install --from-paths src --ignore-src -r -y
@@ -37,6 +40,29 @@ export WS_PATH="$HOME/ros2_ws"
 cd ~/ros2_ws
 source install/setup.bash
 bash ./src/wb_nav2_bringup/scripts/rx20_16.launch.sh
+```
+To run forklift_llm_control:
+```
+**Ensure you you have a valid LLM API key (Anthropic was used for testing) in .env file.**
+**This project we tested with ANTHROPIC_MODEL=claude-haiku-4-5-20251001 (this should be in the .env file).**
+Open a second terminal
+cd ~/ros2_ws (if not at source)
+source install/setup.bash
+python3 src/wb_nav2_bringup/scripts/forklift_llm_control.py
+
+If everything initialized correctly, the following should appear in terminal:
+"Hi from ROSA forklift.
+[INFO] [1778815556.775681575] [basic_navigator]: amcl/get_state service not available, waiting...
+[INFO] [1778815561.290017123] [basic_navigator]: Nav2 is ready for use!
+Using Anthropic
+Type 'exit' or 'quit' to end the program
+
+Enter your request: "
+Enter a valid node requests.
+EX: Describe the scene (Computer Vision is automatically initialized with the launch file)
+    Dock with P1 and deliver to D2
+The model is capable of running multiple tool calls in one command:
+EX: Describe the scene, then dock with P1 and deliver to D2, 
 ```
 
 To run the Turtlebot 4 demo:
